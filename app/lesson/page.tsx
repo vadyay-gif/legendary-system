@@ -1,154 +1,215 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import Header from "@/components/Header";
-import Footer from "@/components/Footer";
+import Link from "next/link";
 
-// --- Temporary: local sample lesson until the AI Ready API is wired up ---
-type Scenario = { id: string; title: string; prompt: string; tip?: string };
+// --- Temporary sample data (replace later with your API data) ---
+type Scenario = { title: string; prompt: string };
 type Lesson = {
-  id: string;
   track: string;
-  title: string;
-  description: string;
+  lesson: string;
   scenarios: Scenario[];
 };
 
-// a tiny pool to randomize from (swap with real API later)
 const SAMPLE_LESSONS: Lesson[] = [
   {
-    id: "email-tone",
     track: "Everyday Communication",
-    title: "Write clearer emails with the right tone",
-    description:
-      "Use AI to turn vague drafts into clear, confident messages tailored to your audience.",
+    lesson: "Polite follow-ups that get replies",
     scenarios: [
       {
-        id: "s1",
-        title: "Turn bullet notes into a concise email",
+        title: "Quick nudge",
         prompt:
-          "Turn these bullets into a concise email to my team about Friday's deadline: • testing running behind • need 24h extension • new ETA Monday 10am • ask for blockers",
-        tip: "Add 'friendly but direct tone' to guide the style.",
+          "You are my polite assistant. Draft a short, kind follow-up to {NAME} about {TOPIC}. Keep it under 90 words, include 1 action I want, and add a gracious close.",
       },
       {
-        id: "s2",
-        title: "Polish a tough message",
+        title: "Escalate gently",
         prompt:
-          "Rewrite this message in a firm but respectful tone for a vendor who missed a milestone: <paste your draft>",
-        tip: "Ask AI for two tone options and pick the best.",
+          "Turn this note into a firm-but-polite escalation. Make the urgency clear, propose 2 times to meet, and keep tone professional.\n\nContext: {CONTEXT}",
       },
       {
-        id: "s3",
-        title: "Adapt tone for exec audience",
+        title: "Summarize thread",
         prompt:
-          "Summarize this long update for an executive in 5 bullet points with clear next steps: <paste the update>",
+          "Summarize the following email thread into 5 bullets: decisions, owners, deadlines, open questions, and risks.\n\nThread:\n{PASTE_THREAD_HERE}",
       },
     ],
   },
   {
-    id: "meeting-notes",
-    track: "Meetings & Notes",
-    title: "From meeting notes to action plan",
-    description:
-      "Convert raw notes into owners, deadlines, and follow-ups in minutes.",
+    track: "Reports & Summaries",
+    lesson: "Executive summary from a long doc",
     scenarios: [
       {
-        id: "s1",
-        title: "Extract decisions and owners",
+        title: "TL;DR in bullets",
         prompt:
-          "From these raw notes, list Decisions, Owners, and Due Dates: <paste your notes>",
+          "Create a 7-bullet executive summary for a senior audience. Include goals, key findings, risks, and recommended next steps.\n\nSource:\n{PASTE_DOC_TEXT}",
       },
       {
-        id: "s2",
-        title: "Write a follow-up email",
+        title: "One-pager outline",
         prompt:
-          "Draft a follow-up email that recaps outcomes and next steps with dates. Keep it under 150 words.",
+          "Outline a one-pager with sections: Background, Current State, Options, Recommendation, Next Steps. Base it on:\n\n{PASTE_NOTES}",
       },
       {
-        id: "s3",
-        title: "Risks & open questions",
+        title: "Slide headlines",
         prompt:
-          "From the same notes, infer 3 risks and 3 open questions to track this week.",
+          "Generate slide headlines (10 words max each) that tell a clear narrative from problem to solution to impact. Use:\n\n{PASTE_CONTENT}",
+      },
+    ],
+  },
+  {
+    track: "Meetings & Notes",
+    lesson: "From messy notes to action plan",
+    scenarios: [
+      {
+        title: "Action items",
+        prompt:
+          "Extract action items from these notes. For each item include Owner, Task, Due Date, and Blockers.\n\nNotes:\n{PASTE_NOTES}",
+      },
+      {
+        title: "Email recap",
+        prompt:
+          "Write a crisp email recap for attendees. Include decisions, owners, deadlines, and open questions. Friendly and concise.\n\nNotes:\n{PASTE_NOTES}",
+      },
+      {
+        title: "Risks and mitigations",
+        prompt:
+          "From the following discussion, list top 5 risks and a realistic mitigation for each.\n\nNotes:\n{PASTE_NOTES}",
       },
     ],
   },
 ];
 
+// --- Component ---
 export default function LessonPage() {
-  // Pick a random lesson on each visit
+  // Pick a lesson once per render
   const lesson = useMemo<Lesson>(() => {
     const i = Math.floor(Math.random() * SAMPLE_LESSONS.length);
     return SAMPLE_LESSONS[i];
   }, []);
 
-  const [active, setActive] = useState<string | null>(null);
+  const [current, setCurrent] = useState(0);
+  const total = lesson.scenarios.length;
+  const scenario = lesson.scenarios[current];
+
+  async function copyPrompt() {
+    try {
+      await navigator.clipboard.writeText(scenario.prompt);
+      alert("Prompt copied to clipboard!");
+    } catch {
+      alert("Could not copy. Please copy manually.");
+    }
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white text-slate-900">
-      <Header current="lesson" />
-      <main className="mx-auto max-w-5xl px-4 py-12">
-        <div className="flex items-center gap-2 text-sm text-slate-500">
-          <a className="hover:underline" href="/">Home</a>
-          <span>›</span>
-          <span>Lesson</span>
-        </div>
-
-        <h1 className="mt-4 text-3xl font-bold tracking-tight">{lesson.title}</h1>
-        <p className="mt-2 text-slate-600">{lesson.description}</p>
-        <div className="mt-2 inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs text-slate-600">
-          <span>Track:</span>
-          <span className="font-medium">{lesson.track}</span>
-        </div>
-
-        <section className="mt-8 grid gap-4">
-          {lesson.scenarios.map((s) => (
-            <div key={s.id} className="rounded-2xl border bg-white p-5 shadow-sm">
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <div className="text-sm font-semibold">{s.title}</div>
-                  <div className="mt-1 text-slate-600 text-sm">
-                    Click “Copy Prompt”, paste into your AI, and run it.
-                  </div>
-                </div>
-                <button
-                  className="rounded-xl border px-3 py-1 text-sm hover:border-slate-400"
-                  onClick={() => {
-                    navigator.clipboard.writeText(s.prompt);
-                    setActive(s.id);
-                    setTimeout(() => setActive(null), 1200);
-                  }}
-                >
-                  {active === s.id ? "Copied!" : "Copy Prompt"}
-                </button>
-              </div>
-              <pre className="mt-3 whitespace-pre-wrap rounded-xl bg-slate-50 p-3 text-sm text-slate-800 border">
-{`${s.prompt}`}
-              </pre>
-              {s.tip && (
-                <div className="mt-2 text-xs text-slate-500">
-                  Tip: {s.tip}
-                </div>
-              )}
+      {/* Top bar */}
+      <header className="sticky top-0 z-40 bg-white/80 backdrop-blur border-b border-slate-200">
+        <div className="mx-auto max-w-6xl px-4 py-3 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="h-8 w-8 rounded-xl bg-slate-900 text-white grid place-items-center font-bold">
+              AI
             </div>
-          ))}
-        </section>
+            <span className="font-semibold">AI Ready</span>
+          </div>
 
-        <div className="mt-10 flex gap-3">
-          <a
+          <nav className="hidden md:flex items-center gap-4 text-sm">
+            <Link href="/" className="hover:underline">
+              Home
+            </Link>
+            <Link href="/funnel" className="hover:underline">
+              Quiz Funnel
+            </Link>
+          </nav>
+        </div>
+      </header>
+
+      {/* Main */}
+      <main className="mx-auto max-w-3xl px-4 py-10">
+        {/* Lesson header */}
+        <div className="rounded-2xl border bg-white p-6 shadow-sm">
+          <div className="text-xs uppercase tracking-wide text-slate-500">
+            {lesson.track}
+          </div>
+          <h1 className="mt-1 text-2xl font-bold">{lesson.lesson}</h1>
+
+          {/* Progress */}
+          <div className="mt-4 flex items-center justify-between">
+            <div className="text-sm text-slate-500">
+              Scenario {current + 1} of {total}
+            </div>
+            <div className="flex gap-2">
+              <button
+                disabled={current === 0}
+                onClick={() => setCurrent((s) => Math.max(0, s - 1))}
+                className="px-3 py-1 rounded-lg border disabled:opacity-50"
+              >
+                Previous
+              </button>
+              <button
+                disabled={current === total - 1}
+                onClick={() => setCurrent((s) => Math.min(total - 1, s + 1))}
+                className="px-3 py-1 rounded-lg border disabled:opacity-50"
+              >
+                Next
+              </button>
+            </div>
+          </div>
+
+          {/* Scenario card */}
+          <div className="mt-6 rounded-xl border bg-slate-50 p-4">
+            <div className="text-sm font-semibold">{scenario.title}</div>
+            <p className="mt-2 text-slate-700 whitespace-pre-wrap">
+              {scenario.prompt}
+            </p>
+
+            <div className="mt-4 flex flex-wrap gap-3">
+              <button
+                onClick={copyPrompt}
+                className="px-4 py-2 rounded-xl border bg-white"
+              >
+                Copy prompt
+              </button>
+              <a
+                href="https://chat.openai.com/"
+                target="_blank"
+                rel="noreferrer"
+                className="px-4 py-2 rounded-xl border bg-white"
+              >
+                Open ChatGPT
+              </a>
+            </div>
+          </div>
+        </div>
+
+        {/* Bottom nav */}
+        <div className="mt-8 grid gap-3 sm:grid-cols-2">
+          <Link
             href="/"
-            className="px-4 py-2 rounded-xl border hover:border-slate-400"
+            className="px-4 py-3 rounded-xl border bg-white text-center"
           >
-            ← Back Home
-          </a>
-          <a
+            Back Home
+          </Link>
+          <Link
             href="/funnel"
-            className="px-4 py-2 rounded-xl bg-slate-900 text-white"
+            className="px-4 py-3 rounded-xl border bg-white text-center"
           >
-            Take the 2-minute quiz
-          </a>
+            See Quiz Funnel
+          </Link>
         </div>
       </main>
-      <Footer />
+
+      {/* Simple footer */}
+      <footer className="mt-16 border-t">
+        <div className="mx-auto max-w-6xl px-4 py-8 text-sm text-slate-500 flex items-center justify-between">
+          <div>© {new Date().getFullYear()} AI Ready</div>
+          <div className="flex gap-4">
+            <a className="hover:underline" href="#">
+              Privacy
+            </a>
+            <a className="hover:underline" href="#">
+              Terms
+            </a>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }
