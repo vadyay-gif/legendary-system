@@ -3,18 +3,19 @@
 import { useEffect, useMemo, useState } from "react";
 
 /**
- * AI Ready — Lesson Page (web)
+ * AI Ready — Lesson Page
  * Route: app/lesson/page.tsx
- * - Page-only visibility fix (adds/removes a class on <body>)
+ * - Page-only visibility fix (adds/removes class on <body>)
  * - Scenario Picker → Scenario Detail → Task → Complete
- * - “Adjust the Result” chips live-update the AI response for Scenario 1
+ * - “Adjust the Result” chips = SINGLE-SELECT (radio-like, click again to clear)
+ * - Tailwind required for the few @apply utilities at the bottom
  */
 
 type View = "picker" | "scenario" | "task" | "complete";
 type ScenarioId = 1 | 2 | 3;
 
 export default function LessonPage() {
-  // Page-only fix: ensure no inherited opacity affects this page.
+  // Force full opacity only while this page is mounted (doesn't affect other pages)
   useEffect(() => {
     document.body.classList.add("lesson-force-opaque");
     return () => document.body.classList.remove("lesson-force-opaque");
@@ -25,7 +26,9 @@ export default function LessonPage() {
   const [scenario, setScenario] = useState<ScenarioId>(1);
   const [checked, setChecked] = useState<Record<number, boolean>>({});
   const [showResult, setShowResult] = useState(false);
-  const [activeChips, setActiveChips] = useState<string[]>([]);
+
+  // SINGLE-SELECT chip (null = none selected)
+  const [activeChip, setActiveChip] = useState<string | null>(null);
 
   // ----- Content -----
   const DATA: Record<
@@ -118,8 +121,7 @@ export default function LessonPage() {
         "Summarize last week and produce a Monday plan with Highlights, Metrics, Lessons, Risks and a Next-Week Plan (owners, time boxes).",
       kicker: "A review matters only if it ends in scheduled actions.",
       completeMsg: "You've completed scenario Weekly Review Template",
-      takeaway:
-        "A review is only useful if it ends in scheduled actions.",
+      takeaway: "A review is only useful if it ends in scheduled actions.",
     },
     3: {
       title: "Goal Progress Tracking",
@@ -144,8 +146,7 @@ export default function LessonPage() {
         "Reframe the event using Facts, Thoughts, Alternative View, and One Next Step in ≤120 words.",
       kicker: "Name the feeling → write the fact → choose one step.",
       completeMsg: "You've completed scenario Goal Progress Tracking",
-      takeaway:
-        "Reframing turns noise into a next step you control.",
+      takeaway: "Reframing turns noise into a next step you control.",
     },
   };
 
@@ -155,25 +156,35 @@ export default function LessonPage() {
     return DATA[scenario].title;
   }, [view, scenario]);
 
-  // Chip preview logic (Scenario 1 only)
+  // SINGLE-SELECT chip logic (applies to scenario 1 preview)
   const previewResponse = useMemo(() => {
     const base = DATA[scenario].response;
     if (scenario !== 1) return base;
     let out = [...base];
-    if (activeChips.includes("Shorter (3 questions)")) out = out.slice(0, 3);
-    if (activeChips.includes("More reflective (add feeling check)"))
-      out = [...out, "How did I feel today (1–2 words)?"];
-    if (activeChips.includes("Action-biased (force next steps)"))
-      out = [...out, "What single action will I take tomorrow?"];
-    if (activeChips.includes("Manager view (add stakeholder note)"))
-      out = [...out, "Any stakeholder to update? What will I say?"];
+    switch (activeChip) {
+      case "Shorter (3 questions)":
+        out = out.slice(0, 3);
+        break;
+      case "More reflective (add feeling check)":
+        out = [...out, "How did I feel today (1–2 words)?"];
+        break;
+      case "Action-biased (force next steps)":
+        out = [...out, "What single action will I take tomorrow?"];
+        break;
+      case "Manager view (add stakeholder note)":
+        out = [...out, "Any stakeholder to update? What will I say?"];
+        break;
+      default:
+        // no chip selected
+        break;
+    }
     return out;
-  }, [scenario, activeChips]);
+  }, [scenario, activeChip]);
 
   // ----- Handlers -----
   const openScenario = (id: ScenarioId) => {
     setScenario(id);
-    setActiveChips([]);
+    setActiveChip(null);            // clear chip when changing scenarios
     setView("scenario");
     window?.scrollTo?.({ top: 0, behavior: "smooth" });
   };
@@ -183,12 +194,6 @@ export default function LessonPage() {
     setShowResult(false);
     setView("task");
     window?.scrollTo?.({ top: 0, behavior: "smooth" });
-  };
-
-  const toggleChip = (label: string) => {
-    setActiveChips((prev) =>
-      prev.includes(label) ? prev.filter((c) => c !== label) : [...prev, label]
-    );
   };
 
   const checkAnswer = () => {
@@ -207,13 +212,13 @@ export default function LessonPage() {
       <header className="sticky top-0 z-10 border-b bg-white/80 backdrop-blur">
         <div className="mx-auto flex max-w-5xl items-center gap-3 px-4 py-3">
           <button
-            onClick={() => setView(view === "picker" ? "picker" : "picker")}
+            onClick={() => setView("picker")}
             className="grid h-9 w-9 place-items-center rounded-full bg-slate-100"
             aria-label="Back"
           >
             ←
           </button>
-          <h1 className="text-xl font-bold md:text-2xl">{title}</h1>
+        <h1 className="text-xl font-bold md:text-2xl">{title}</h1>
         </div>
       </header>
 
@@ -266,11 +271,12 @@ export default function LessonPage() {
             <Section title="Adjust the Result">
               <div className="flex flex-wrap gap-2">
                 {data.chips.map((c) => {
-                  const on = activeChips.includes(c);
+                  const on = activeChip === c;
                   return (
                     <button
                       key={c}
-                      onClick={() => toggleChip(c)}
+                      type="button"
+                      onClick={() => setActiveChip(on ? null : c)} // single-select toggle
                       aria-pressed={on}
                       className={`rounded-full border px-3.5 py-2 text-sm font-semibold ${
                         on
