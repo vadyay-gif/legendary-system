@@ -2,7 +2,23 @@
 
 import { useMemo, useState } from "react";
 
-export default function Page() {
+export default function LessonPage() {
+  return (
+    <div id="lesson-root">
+      {/* your existing lesson JSX goes here */}
+
+      <style jsx global>{`
+        /* Force full visibility only inside this lesson page */
+        #lesson-root,
+        #lesson-root * {
+          opacity: 1 !important;
+          color: #0f172a !important; /* slate-900 for strong text */
+        }
+      `}</style>
+    </div>
+  );
+}
+
   // views
   const [view, setView] = useState<"picker" | "s1" | "s2" | "s3" | "task" | "complete">("picker");
   const [currentTask, setCurrentTask] = useState<number>(1);
