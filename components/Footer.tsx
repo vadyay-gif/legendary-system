@@ -7,7 +7,7 @@ export default function Footer() {
           <p className="mt-1">© {new Date().getFullYear()} AI Ready. All rights reserved.</p>
         </div>
         <div className="flex gap-4 md:justify-end">
-          <a href="#" className="hover:underline">Privacy</a>
+          <a href="/privacy" className="hover:underline">Privacy</a>
           <a href="#" className="hover:underline">Terms</a>
           <a href="#" className="hover:underline">Contact</a>
         </div>
