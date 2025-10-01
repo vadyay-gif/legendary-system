@@ -18,7 +18,7 @@ export default function Page() {
             </p>
             <div className="mt-6 flex flex-col sm:flex-row gap-3">
               <a href="/funnel" className="px-5 py-3 rounded-xl bg-slate-900 text-white text-center">Take the 2-minute quiz</a>
-              <a href="#features" className="px-5 py-3 rounded-xl border border-slate-300 text-center">See how it works</a>
+              <a href="/lesson" className="px-5 py-3 rounded-xl border border-slate-300 text-center">See how it works</a>
             </div>
           </div>
           <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm">
