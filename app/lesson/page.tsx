@@ -1,235 +1,440 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
-/** ---------- Types ---------- */
-type VariationKey = "default" | "shorter" | "reflective" | "action" | "manager";
+/**
+ * AI Ready — Lesson Page
+ * Route: app/lesson/page.tsx
+ * - Page-only visibility fix (adds/removes class on <body>)
+ * - Scenario Picker → Scenario Detail → Task → Complete
+ * - “Adjust the Result” chips = SINGLE-SELECT (radio-like, click again to clear)
+ * - Tailwind required for the few @apply utilities at the bottom
+ */
 
-type Scenario = {
-  id: string;
-  title: string;
-  askIntro: string;            // “What to Ask AI” paragraph
-  variations: Record<VariationKey, string[]>;
-  proTip?: string;
-  ctaText?: string;
-  ctaHref?: string;
-};
+type View = "picker" | "scenario" | "task" | "complete";
+type ScenarioId = 1 | 2 | 3;
 
-/** ---------- Reusable scenario block ---------- */
-function ScenarioBlock({ scenario }: { scenario: Scenario }) {
-  const [active, setActive] = useState<VariationKey>("default");
+export default function LessonPage() {
+  // Force full opacity only while this page is mounted (doesn't affect other pages)
+  useEffect(() => {
+    document.body.classList.add("lesson-force-opaque");
+    return () => document.body.classList.remove("lesson-force-opaque");
+  }, []);
 
-  const chips: { key: VariationKey; label: string }[] = [
-    { key: "shorter",     label: "Shorter (3 questions)" },
-    { key: "reflective",  label: "More reflective (add feeling check)" },
-    { key: "action",      label: "Action-biased (force next steps)" },
-    { key: "manager",     label: "Manager view (add stakeholder note)" },
-  ];
+  // ----- UI State -----
+  const [view, setView] = useState<View>("picker");
+  const [scenario, setScenario] = useState<ScenarioId>(1);
+  const [checked, setChecked] = useState<Record<number, boolean>>({});
+  const [showResult, setShowResult] = useState(false);
 
-  return (
-    <section className="rounded-2xl border border-slate-200 bg-white p-6 md:p-8 shadow-sm">
-      <h2 className="text-2xl md:text-3xl font-semibold mb-4">{scenario.title}</h2>
+  // SINGLE-SELECT chip (null = none selected)
+  const [activeChip, setActiveChip] = useState<string | null>(null);
 
-      <h3 className="text-lg font-semibold mb-1">What to Ask AI</h3>
-      <p className="text-slate-700 mb-5">{scenario.askIntro}</p>
-
-      <h3 className="text-lg font-semibold mb-2">AI&apos;s Response</h3>
-      <ul className="list-disc pl-5 space-y-2 mb-6">
-        {(scenario.variations[active] ?? scenario.variations.default).map((q, i) => (
-          <li key={i} className="text-slate-800">{q}</li>
-        ))}
-      </ul>
-
-      <h3 className="text-lg font-semibold mb-3">Adjust the Result</h3>
-      <div className="flex flex-wrap gap-3 mb-4">
-        {chips.map(({ key, label }) => {
-          const selected = active === key;
-          return (
-            <button
-              key={key}
-              onClick={() => setActive(key)}
-              aria-pressed={selected}
-              className={[
-                "px-4 py-2 rounded-full text-sm font-medium transition",
-                "border",
-                selected
-                  ? "bg-slate-900 text-white border-slate-900"
-                  : "bg-white text-slate-800 border-slate-300 hover:bg-slate-50"
-              ].join(" ")}
-            >
-              {label}
-            </button>
-          );
-        })}
-
-        {/* Reset to default */}
-        <button
-          onClick={() => setActive("default")}
-          className="px-4 py-2 rounded-full text-sm font-medium border border-slate-300 hover:bg-slate-50"
-          title="Reset"
-        >
-          Reset
-        </button>
-      </div>
-
-      {scenario.proTip && (
-        <p className="text-slate-700 mb-4">
-          <span className="font-semibold">Pro Tip — </span>
-          {scenario.proTip}
-        </p>
-      )}
-
-      {scenario.ctaHref && scenario.ctaText && (
-        <a
-          href={scenario.ctaHref}
-          className="inline-block mt-1 rounded-xl border border-slate-300 px-4 py-2 text-center hover:bg-slate-50"
-        >
-          {scenario.ctaText}
-        </a>
-      )}
-    </section>
-  );
-}
-
-/** ---------- Page data (3 scenarios) ---------- */
-const scenarios: Scenario[] = [
-  {
-    id: "daily-reflection",
-    title: "Daily Reflection Prompts",
-    askIntro:
-      "Act as a productivity coach. Create a 3-minute end-of-day reflection template for a <role> working on <project>. Ask 5 concise questions covering wins, lessons, blockers, and priorities for tomorrow. Output as bullets.",
-    variations: {
-      default: [
+  // ----- Content -----
+  const DATA: Record<
+    ScenarioId,
+    {
+      title: string;
+      subtitle: string;
+      situation: string;
+      ask: string;
+      response: string[];
+      chips: string[];
+      protip: string;
+      taskGoal: string;
+      taskOptions: string[];
+      assembled: string;
+      kicker: string;
+      completeMsg: string;
+      takeaway: string;
+    }
+  > = {
+    1: {
+      title: "Daily Reflection Prompts",
+      subtitle: "You want a 3-minute daily reflection habit",
+      situation:
+        "You want a 3-minute daily reflection to capture wins, lessons, and blockers for <project>.",
+      ask:
+        "Act as a productivity coach. Create a 3-minute end-of-day reflection template for a <role> working on <project>. Ask 5 concise questions covering wins, lessons, blockers, and priorities for tomorrow. Output as bullets.",
+      response: [
         "What was my biggest win today and why?",
         "What challenge did I face and how did I handle it?",
         "What did I learn today that I can apply tomorrow?",
         "What would I do differently if I could repeat today?",
-        "What am I grateful for today?"
+        "What am I grateful for today?",
       ],
-      shorter: [
-        "What was my biggest win today?",
-        "What challenge did I face?",
-        "What am I grateful for today?"
+      chips: [
+        "Shorter (3 questions)",
+        "More reflective (add feeling check)",
+        "Action-biased (force next steps)",
+        "Manager view (add stakeholder note)",
       ],
-      reflective: [
-        "How did I feel during today’s biggest win?",
-        "Which moment drained or energized me most?",
-        "What belief or assumption changed today?",
-        "What am I proud of myself for?",
-        "What am I grateful for today?"
+      protip:
+        "Keep reflection prompts consistent but allow for personal interpretation.",
+      taskGoal:
+        "Create 5 daily reflection prompts for productivity and growth.",
+      taskOptions: [
+        "Include win/achievement prompt",
+        "Add challenge/learning prompt",
+        "Include improvement prompt",
+        "Add gratitude prompt",
+        "Make prompts actionable",
       ],
-      action: [
-        "What is one action I’ll repeat tomorrow?",
-        "What blocker must I remove first thing tomorrow?",
-        "What single step would make tomorrow easier?",
-        "Which task deserves 30 minutes of deep focus?",
-        "What can I delegate or automate?"
-      ],
-      manager: [
-        "What should stakeholders know about today’s progress?",
-        "What risk should I flag early?",
-        "What is my top priority for tomorrow?",
-        "Who needs an update or decision?",
-        "What support or resources do I need?"
-      ]
+      assembled:
+        "Create 5 daily reflection prompts covering wins, challenges, learning, improvement, and gratitude.",
+      kicker:
+        "Balanced reflection prompts cover wins, challenges, learning, and gratitude.",
+      completeMsg: "You've completed scenario Daily Reflection Prompts",
+      takeaway:
+        "Structured reflection prompts deepen self-awareness and growth.",
     },
-    proTip:
-      "Keep reflection prompts consistent but allow for personal interpretation.",
-    ctaText: "Try the Task",
-    ctaHref: "#"
-  },
-  {
-    id: "tomorrow-plan",
-    title: "Action Plan for Tomorrow",
-    askIntro:
-      "As a focus coach, turn today’s notes into a crisp plan for tomorrow. Limit to 5 bullets: 3 priorities, 1 blocker with mitigation, 1 quick win.",
-    variations: {
-      default: [
-        "Top 3 priorities with clear outcomes.",
-        "One blocker + concrete mitigation.",
-        "One quick win to build momentum.",
-        "Time estimate next to each item.",
-        "End with: 'If I do only one thing tomorrow, it’s __.'"
+    2: {
+      title: "Weekly Review Template",
+      subtitle: "Turn last week’s notes into a Monday plan",
+      situation:
+        "You need a 10-minute weekly review that turns notes into a Monday plan.",
+      ask:
+        "Summarize my week from the notes below and create a Monday action plan. Use sections: Highlights, Metrics, Lessons, Risks, Next-Week Plan (with owners & time boxes). Notes: <paste bullets>.",
+      response: [
+        "Highlights: …",
+        "Metrics: …",
+        "Lessons: …",
+        "Risks: …",
+        "Next-Week Plan: 1) … (Owner, 90m) 2) … (Owner, 45m)",
       ],
-      shorter: [
-        "Top 2 priorities.",
-        "One blocker + mitigation.",
-        "One quick win."
+      chips: [
+        "Add metrics table",
+        "Reduce to one-pager",
+        "Executive tone",
+        "Include calendar blocks",
       ],
-      reflective: [
-        "Which priority aligns most with my goals?",
-        "What would make me proud tomorrow?",
-        "What could I postpone without harm?"
+      protip: "Convert “Next-Week Plan” into calendar holds immediately.",
+      taskGoal:
+        "Turn last week's notes into a Monday plan with Highlights, Metrics, Lessons, Risks, and a Next-Week Plan.",
+      taskOptions: [
+        "Add highlights section",
+        "Include metrics and targets",
+        "Capture lessons & risks",
+        "Create next-week plan with owners & time boxes",
       ],
-      action: [
-        "Rewrite each priority as a verb + outcome.",
-        "Add a 30–60 min timebox to each.",
-        "Assign a start time for Priority #1."
-      ],
-      manager: [
-        "What stakeholder outcome will be visible tomorrow?",
-        "Which dependency needs confirmation?",
-        "What update should I schedule?"
-      ]
+      assembled:
+        "Summarize last week and produce a Monday plan with Highlights, Metrics, Lessons, Risks and a Next-Week Plan (owners, time boxes).",
+      kicker: "A review matters only if it ends in scheduled actions.",
+      completeMsg: "You've completed scenario Weekly Review Template",
+      takeaway: "A review is only useful if it ends in scheduled actions.",
     },
-    proTip:
-      "Timebox priorities. If it won’t fit tomorrow, move it to the parking lot.",
-    ctaText: "Try the Task",
-    ctaHref: "#"
-  },
-  {
-    id: "retro-lite",
-    title: "Team Retro — 10-Minute Lite",
-    askIntro:
-      "Create a 10-minute retrospective for a small team. Focus on quick learning and next actions. Output as bullets the team can paste into chat.",
-    variations: {
-      default: [
-        "What went well (2 bullets).",
-        "What needs improvement (2 bullets).",
-        "One experiment to try next week.",
-        "One risk to watch.",
-        "Owner + due date for the experiment."
+    3: {
+      title: "Goal Progress Tracking",
+      subtitle: "Capture stress, reframe, and pick one step",
+      situation:
+        "You felt overwhelmed today; you want a calm, factual summary and one concrete next step.",
+      ask:
+        "Act as a cognitive coach. Reframe the following stressful event using: Facts, Thoughts, Alternative View, One Next Step. Keep it supportive, professional, and under 120 words. Event: <describe>.",
+      response: ["Facts: …", "Thoughts: …", "Alternative View: …", "One Next Step: …"],
+      chips: ["Shorter (≤80 words)", "More empathetic", "Data-driven framing", "Add checklist for tomorrow"],
+      protip:
+        "Name the feeling → write the fact → choose one step. That’s the reset.",
+      taskGoal:
+        "Reframe a stressful event into Facts, Thoughts, Alternative View, One Next Step (≤120 words).",
+      taskOptions: [
+        "State the facts objectively",
+        "Name the thought/emotion",
+        "Offer an alternative view",
+        "Pick one next step",
       ],
-      shorter: [
-        "1 win, 1 improvement, 1 experiment."
-      ],
-      reflective: [
-        "Which behavior helped us most?",
-        "What surprised us?",
-        "What’s something we can stop doing?"
-      ],
-      action: [
-        "Turn each improvement into a task with owner + date.",
-        "Define success metric for next week’s experiment.",
-        "Schedule a 15-min review slot."
-      ],
-      manager: [
-        "What should be surfaced to leadership?",
-        "Any cross-team dependency to ping?",
-        "What decision is needed and by whom?"
-      ]
+      assembled:
+        "Reframe the event using Facts, Thoughts, Alternative View, and One Next Step in ≤120 words.",
+      kicker: "Name the feeling → write the fact → choose one step.",
+      completeMsg: "You've completed scenario Goal Progress Tracking",
+      takeaway: "Reframing turns noise into a next step you control.",
     },
-    proTip:
-      "Keep it lightweight so teams will actually do it every week.",
-    ctaText: "Try the Task",
-    ctaHref: "#"
-  }
-];
+  };
 
-/** ---------- Page ---------- */
-export default function LessonPage() {
+  const title = useMemo(() => {
+    if (view === "picker") return "Choose a Scenario";
+    if (view === "complete") return "Scenario Complete";
+    return DATA[scenario].title;
+  }, [view, scenario]);
+
+  // SINGLE-SELECT chip logic (applies to scenario 1 preview)
+  const previewResponse = useMemo(() => {
+    const base = DATA[scenario].response;
+    if (scenario !== 1) return base;
+    let out = [...base];
+    switch (activeChip) {
+      case "Shorter (3 questions)":
+        out = out.slice(0, 3);
+        break;
+      case "More reflective (add feeling check)":
+        out = [...out, "How did I feel today (1–2 words)?"];
+        break;
+      case "Action-biased (force next steps)":
+        out = [...out, "What single action will I take tomorrow?"];
+        break;
+      case "Manager view (add stakeholder note)":
+        out = [...out, "Any stakeholder to update? What will I say?"];
+        break;
+      default:
+        // no chip selected
+        break;
+    }
+    return out;
+  }, [scenario, activeChip]);
+
+  // ----- Handlers -----
+  const openScenario = (id: ScenarioId) => {
+    setScenario(id);
+    setActiveChip(null);            // clear chip when changing scenarios
+    setView("scenario");
+    window?.scrollTo?.({ top: 0, behavior: "smooth" });
+  };
+
+  const openTask = () => {
+    setChecked({});
+    setShowResult(false);
+    setView("task");
+    window?.scrollTo?.({ top: 0, behavior: "smooth" });
+  };
+
+  const checkAnswer = () => {
+    if (Object.values(checked).every((v) => !v)) return;
+    setShowResult(true);
+    setTimeout(() => {
+      document.getElementById("resultBlock")?.scrollIntoView({ behavior: "smooth" });
+    }, 0);
+  };
+
+  const data = DATA[scenario];
+
   return (
-    <main className="max-w-4xl mx-auto px-4 py-8 md:py-12 space-y-8">
-      <header className="mb-2">
-        <h1 className="text-3xl md:text-4xl font-bold">Lesson</h1>
-        <p className="text-slate-600 mt-1">
-          Three practical scenarios. Use the chips to tailor the output.
-        </p>
+    <div className="min-h-screen bg-slate-50 text-slate-900">
+      {/* Header */}
+      <header className="sticky top-0 z-10 border-b bg-white/80 backdrop-blur">
+        <div className="mx-auto flex max-w-5xl items-center gap-3 px-4 py-3">
+          <button
+            onClick={() => setView("picker")}
+            className="grid h-9 w-9 place-items-center rounded-full bg-slate-100"
+            aria-label="Back"
+          >
+            ←
+          </button>
+        <h1 className="text-xl font-bold md:text-2xl">{title}</h1>
+        </div>
       </header>
 
-      {scenarios.map((s) => (
-        <ScenarioBlock key={s.id} scenario={s} />
-      ))}
-    </main>
+      <main className="mx-auto max-w-5xl px-4 pb-24 pt-6">
+        {/* PICKER */}
+        {view === "picker" && (
+          <div className="rounded-2xl bg-white p-4 shadow">
+            <h2 className="mb-4 text-lg font-semibold">Select a scenario to practice:</h2>
+            <div className="grid gap-4">
+              {(Object.keys(DATA) as unknown as ScenarioId[]).map((id) => (
+                <button
+                  key={id}
+                  onClick={() => openScenario(id)}
+                  className="w-full rounded-2xl border border-violet-200 bg-violet-50 px-4 py-4 text-left shadow-sm hover:bg-violet-100"
+                >
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="tile-title text-2xl font-bold">{DATA[id].title}</div>
+                      <div className="text-slate-700">{DATA[id].subtitle}</div>
+                    </div>
+                    <span className="text-3xl leading-none">›</span>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* SCENARIO */}
+        {view === "scenario" && (
+          <div className="space-y-3">
+            <h2 className="text-2xl font-bold">{data.title}</h2>
+
+            <Section title="Situation">
+              <p className="text-slate-700">{data.situation}</p>
+            </Section>
+
+            <Section title="What to Ask AI">
+              <p className="text-slate-700">{data.ask}</p>
+            </Section>
+
+            <Section title="AI's Response">
+              <ul className="ml-5 list-disc space-y-1">
+                {(scenario === 1 ? previewResponse : data.response).map((t, i) => (
+                  <li key={i}>{t}</li>
+                ))}
+              </ul>
+            </Section>
+
+            <Section title="Adjust the Result">
+              <div className="flex flex-wrap gap-2">
+                {data.chips.map((c) => {
+                  const on = activeChip === c;
+                  return (
+                    <button
+                      key={c}
+                      type="button"
+                      onClick={() => setActiveChip(on ? null : c)} // single-select toggle
+                      aria-pressed={on}
+                      className={`rounded-full border px-3.5 py-2 text-sm font-semibold ${
+                        on
+                          ? "border-slate-300 bg-slate-200 ring-2 ring-blue-400"
+                          : "border-slate-200 bg-slate-100 hover:bg-slate-200"
+                      }`}
+                    >
+                      {c}
+                    </button>
+                  );
+                })}
+              </div>
+            </Section>
+
+            <Section tone="banner">
+              <b>Pro Tip —</b> {data.protip}
+            </Section>
+
+            <button className="btn-primary" onClick={openTask}>
+              Try the Task
+            </button>
+          </div>
+        )}
+
+        {/* TASK */}
+        {view === "task" && (
+          <div className="space-y-4">
+            <h2 className="text-2xl font-bold">{data.title}</h2>
+            <Section tone="banner">
+              <b>Task Goal —</b> {data.taskGoal}
+            </Section>
+
+            <h3 className="text-xl font-semibold">Select the prompt pieces:</h3>
+            <div className="grid gap-3">
+              {data.taskOptions.map((opt, i) => (
+                <label
+                  key={i}
+                  className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-4"
+                >
+                  <input
+                    type="checkbox"
+                    className="h-5 w-5"
+                    checked={!!checked[i]}
+                    onChange={(e) => {
+                      setShowResult(false);
+                      setChecked((c) => ({ ...c, [i]: e.target.checked }));
+                    }}
+                  />
+                  <span>{opt}</span>
+                </label>
+              ))}
+            </div>
+
+            <div className="grid gap-3 md:grid-cols-2">
+              <button
+                className="btn-ghost"
+                onClick={() => alert("Not finished yet — You skipped the task.")}
+              >
+                Skip
+              </button>
+              <button
+                className="btn-outline disabled:opacity-50"
+                disabled={Object.values(checked).every((v) => !v)}
+                onClick={checkAnswer}
+              >
+                Check My Answer
+              </button>
+            </div>
+
+            {showResult && (
+              <div id="resultBlock" className="space-y-3">
+                <div className="ok-panel">
+                  <b>Correct!</b> Great job! You selected the right prompt pieces.
+                </div>
+                <Section>
+                  <h3 className="text-xl font-semibold">Your assembled prompt:</h3>
+                  <input
+                    className="mt-2 w-full rounded-xl border border-slate-300 p-3"
+                    value={data.assembled}
+                    readOnly
+                  />
+                  <p className="mt-2 text-slate-600">{data.kicker}</p>
+                </Section>
+                <button className="btn-primary" onClick={() => setView("complete")}>
+                  Done
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* COMPLETE */}
+        {view === "complete" && (
+          <div className="rounded-2xl bg-white p-6 text-center shadow">
+            <div className="text-6xl text-emerald-500">✔</div>
+            <h2 className="mt-2 text-2xl font-bold">Great job!</h2>
+            <p className="text-slate-600">{data.completeMsg}</p>
+            <Section tone="banner">
+              <b>Key Takeaway —</b> {data.takeaway}
+            </Section>
+            <div className="mt-3 grid gap-3 md:grid-cols-2">
+              <button className="btn-ghost" onClick={() => setView("picker")}>
+                Back to Tracks
+              </button>
+              <button className="btn-primary" onClick={() => setView("picker")}>
+                Another Scenario
+              </button>
+            </div>
+          </div>
+        )}
+      </main>
+
+      {/* Local utility styles (Tailwind required) */}
+      <style jsx global>{`
+        body.lesson-force-opaque,
+        body.lesson-force-opaque * {
+          opacity: 1 !important;
+        }
+        .btn-primary {
+          @apply w-full rounded-full bg-blue-500 px-5 py-3 font-extrabold text-white shadow hover:bg-blue-600;
+        }
+        .btn-outline {
+          @apply w-full rounded-full border-2 border-blue-500 px-5 py-3 font-extrabold text-blue-600 hover:bg-blue-50;
+        }
+        .btn-ghost {
+          @apply w-full rounded-full border-2 border-slate-300 px-5 py-3 font-extrabold text-slate-800 hover:bg-slate-50;
+        }
+        .ok-panel {
+          @apply flex items-center gap-2 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-emerald-800;
+        }
+        .section {
+          @apply rounded-2xl border p-4 md:p-5;
+        }
+        .section-default {
+          @apply bg-slate-50 border-slate-200;
+        }
+        .section-banner {
+          @apply bg-purple-100/70 border-purple-200;
+        }
+      `}</style>
+    </div>
+  );
+}
+
+/* ---------- Small primitive ---------- */
+function Section({
+  title,
+  tone = "default",
+  children,
+}: {
+  title?: string;
+  tone?: "banner" | "default";
+  children: React.ReactNode;
+}) {
+  return (
+    <div className={`section ${tone === "banner" ? "section-banner" : "section-default"}`}>
+      {title ? <h3 className="mb-2 text-xl font-semibold">{title}</h3> : null}
+      {children}
+    </div>
   );
 }
