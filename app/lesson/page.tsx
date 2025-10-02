@@ -156,29 +156,65 @@ export default function LessonPage() {
     return DATA[scenario].title;
   }, [view, scenario]);
 
-  // SINGLE-SELECT chip logic (applies to scenario 1 preview)
+  /** Compute the modified “AI's Response” for the current scenario + active chip */
   const previewResponse = useMemo(() => {
-    const base = DATA[scenario].response;
-    if (scenario !== 1) return base;
-    let out = [...base];
-    switch (activeChip) {
-      case "Shorter (3 questions)":
-        out = out.slice(0, 3);
-        break;
-      case "More reflective (add feeling check)":
-        out = [...out, "How did I feel today (1–2 words)?"];
-        break;
-      case "Action-biased (force next steps)":
-        out = [...out, "What single action will I take tomorrow?"];
-        break;
-      case "Manager view (add stakeholder note)":
-        out = [...out, "Any stakeholder to update? What will I say?"];
-        break;
+    const base = [...DATA[scenario].response];
+    if (!activeChip) return base;
+
+    switch (scenario) {
+      // Scenario 1 — Daily Reflection Prompts
+      case 1: {
+        switch (activeChip) {
+          case "Shorter (3 questions)":
+            return base.slice(0, 3);
+          case "More reflective (add feeling check)":
+            return [...base, "How did I feel today (1–2 words)?"];
+          case "Action-biased (force next steps)":
+            return [...base, "What single action will I take tomorrow?"];
+          case "Manager view (add stakeholder note)":
+            return [...base, "Any stakeholder to update? What will I say?"];
+          default:
+            return base;
+        }
+      }
+      // Scenario 2 — Weekly Review Template
+      case 2: {
+        switch (activeChip) {
+          case "Add metrics table":
+            return [
+              ...base,
+              "Metrics Table: | Metric | Target | Actual |",
+            ];
+          case "Reduce to one-pager":
+            // Keep it tight: reduce to the three most useful bullets
+            return [base[0], base[2], base[4]].filter(Boolean);
+          case "Executive tone":
+            return [...base, "Use concise, executive-ready wording."];
+          case "Include calendar blocks":
+            return [...base, "Block calendar time for each priority."];
+          default:
+            return base;
+        }
+      }
+      // Scenario 3 — Goal Progress Tracking
+      case 3: {
+        switch (activeChip) {
+          case "Shorter (≤80 words)":
+            // Focus on the essentials
+            return base.slice(0, 3);
+          case "More empathetic":
+            return [...base, "Tone: empathetic and supportive."];
+          case "Data-driven framing":
+            return [...base, "Add one data point to support the view."];
+          case "Add checklist for tomorrow":
+            return [...base, "Checklist: [ ] task 1  [ ] task 2  [ ] task 3"];
+          default:
+            return base;
+        }
+      }
       default:
-        // no chip selected
-        break;
+        return base;
     }
-    return out;
   }, [scenario, activeChip]);
 
   // ----- Handlers -----
@@ -218,7 +254,7 @@ export default function LessonPage() {
           >
             ←
           </button>
-        <h1 className="text-xl font-bold md:text-2xl">{title}</h1>
+          <h1 className="text-xl font-bold md:text-2xl">{title}</h1>
         </div>
       </header>
 
@@ -262,7 +298,7 @@ export default function LessonPage() {
 
             <Section title="AI's Response">
               <ul className="ml-5 list-disc space-y-1">
-                {(scenario === 1 ? previewResponse : data.response).map((t, i) => (
+                {previewResponse.map((t, i) => (
                   <li key={i}>{t}</li>
                 ))}
               </ul>
@@ -295,6 +331,7 @@ export default function LessonPage() {
               <b>Pro Tip —</b> {data.protip}
             </Section>
 
+            {/* Real button, unchanged style */}
             <button className="btn-primary" onClick={openTask}>
               Try the Task
             </button>
