@@ -2,35 +2,33 @@
 
 import { useEffect, useMemo, useState } from "react";
 
-/**
- * AI Ready — Lesson Page
- * Route: app/lesson/page.tsx
- * - Page-only visibility fix (adds/removes class on <body>)
- * - Scenario Picker → Scenario Detail → Task → Complete
- * - “Adjust the Result” chips = SINGLE-SELECT (radio-like, click again to clear)
- * - Tailwind required for the few @apply utilities at the bottom
- */
-
+/** Views */
 type View = "picker" | "scenario" | "task" | "complete";
 type ScenarioId = 1 | 2 | 3;
 
+/** Page */
 export default function LessonPage() {
-  // Force full opacity only while this page is mounted (doesn't affect other pages)
+  // keep page fully opaque (if you had a fade elsewhere)
   useEffect(() => {
     document.body.classList.add("lesson-force-opaque");
     return () => document.body.classList.remove("lesson-force-opaque");
   }, []);
 
-  // ----- UI State -----
   const [view, setView] = useState<View>("picker");
   const [scenario, setScenario] = useState<ScenarioId>(1);
+
+  // one active chip per scenario (null means default)
+  const [activeChip, setActiveChip] = useState<Record<ScenarioId, string | null>>({
+    1: null,
+    2: null,
+    3: null,
+  });
+
+  // task state (unchanged behavior)
   const [checked, setChecked] = useState<Record<number, boolean>>({});
   const [showResult, setShowResult] = useState(false);
 
-  // SINGLE-SELECT chip (null = none selected)
-  const [activeChip, setActiveChip] = useState<string | null>(null);
-
-  // ----- Content -----
+  /** Content */
   const DATA: Record<
     ScenarioId,
     {
@@ -38,9 +36,11 @@ export default function LessonPage() {
       subtitle: string;
       situation: string;
       ask: string;
-      response: string[];
-      chips: string[];
+      response: string[];     // base “AI’s Response”
+      chips: string[];        // chip labels shown
       protip: string;
+
+      // task bits (as in your original page)
       taskGoal: string;
       taskOptions: string[];
       assembled: string;
@@ -69,10 +69,9 @@ export default function LessonPage() {
         "Action-biased (force next steps)",
         "Manager view (add stakeholder note)",
       ],
-      protip:
-        "Keep reflection prompts consistent but allow for personal interpretation.",
-      taskGoal:
-        "Create 5 daily reflection prompts for productivity and growth.",
+      protip: "Keep reflection prompts consistent but allow for personal interpretation.",
+
+      taskGoal: "Create 5 daily reflection prompts for productivity and growth.",
       taskOptions: [
         "Include win/achievement prompt",
         "Add challenge/learning prompt",
@@ -85,8 +84,7 @@ export default function LessonPage() {
       kicker:
         "Balanced reflection prompts cover wins, challenges, learning, and gratitude.",
       completeMsg: "You've completed scenario Daily Reflection Prompts",
-      takeaway:
-        "Structured reflection prompts deepen self-awareness and growth.",
+      takeaway: "Structured reflection prompts deepen self-awareness and growth.",
     },
     2: {
       title: "Weekly Review Template",
@@ -109,6 +107,7 @@ export default function LessonPage() {
         "Include calendar blocks",
       ],
       protip: "Convert “Next-Week Plan” into calendar holds immediately.",
+
       taskGoal:
         "Turn last week's notes into a Monday plan with Highlights, Metrics, Lessons, Risks, and a Next-Week Plan.",
       taskOptions: [
@@ -131,9 +130,15 @@ export default function LessonPage() {
       ask:
         "Act as a cognitive coach. Reframe the following stressful event using: Facts, Thoughts, Alternative View, One Next Step. Keep it supportive, professional, and under 120 words. Event: <describe>.",
       response: ["Facts: …", "Thoughts: …", "Alternative View: …", "One Next Step: …"],
-      chips: ["Shorter (≤80 words)", "More empathetic", "Data-driven framing", "Add checklist for tomorrow"],
+      chips: [
+        "Shorter (≤80 words)",
+        "More empathetic",
+        "Data-driven framing",
+        "Add checklist for tomorrow",
+      ],
       protip:
         "Name the feeling → write the fact → choose one step. That’s the reset.",
+
       taskGoal:
         "Reframe a stressful event into Facts, Thoughts, Alternative View, One Next Step (≤120 words).",
       taskOptions: [
@@ -150,77 +155,59 @@ export default function LessonPage() {
     },
   };
 
+  /** Title per view */
   const title = useMemo(() => {
     if (view === "picker") return "Choose a Scenario";
     if (view === "complete") return "Scenario Complete";
     return DATA[scenario].title;
   }, [view, scenario]);
 
-  /** Compute the modified “AI's Response” for the current scenario + active chip */
+  /** Build the adjusted “AI’s Response” for the open scenario */
   const previewResponse = useMemo(() => {
     const base = [...DATA[scenario].response];
-    if (!activeChip) return base;
+    const chip = activeChip[scenario];
+    if (!chip) return base;
 
     switch (scenario) {
-      // Scenario 1 — Daily Reflection Prompts
       case 1: {
-        switch (activeChip) {
-          case "Shorter (3 questions)":
-            return base.slice(0, 3);
-          case "More reflective (add feeling check)":
-            return [...base, "How did I feel today (1–2 words)?"];
-          case "Action-biased (force next steps)":
-            return [...base, "What single action will I take tomorrow?"];
-          case "Manager view (add stakeholder note)":
-            return [...base, "Any stakeholder to update? What will I say?"];
-          default:
-            return base;
-        }
+        if (chip === "Shorter (3 questions)") return base.slice(0, 3);
+        if (chip === "More reflective (add feeling check)")
+          return [...base, "How did I feel today (1–2 words)?"];
+        if (chip === "Action-biased (force next steps)")
+          return [...base, "What single action will I take tomorrow?"];
+        if (chip === "Manager view (add stakeholder note)")
+          return [...base, "Any stakeholder to update? What will I say?"];
+        return base;
       }
-      // Scenario 2 — Weekly Review Template
       case 2: {
-        switch (activeChip) {
-          case "Add metrics table":
-            return [
-              ...base,
-              "Metrics Table: | Metric | Target | Actual |",
-            ];
-          case "Reduce to one-pager":
-            // Keep it tight: reduce to the three most useful bullets
-            return [base[0], base[2], base[4]].filter(Boolean);
-          case "Executive tone":
-            return [...base, "Use concise, executive-ready wording."];
-          case "Include calendar blocks":
-            return [...base, "Block calendar time for each priority."];
-          default:
-            return base;
-        }
+        if (chip === "Add metrics table")
+          return [...base, "Metrics Table: | Metric | Target | Actual |"];
+        if (chip === "Reduce to one-pager")
+          return [base[0], base[2], base[4]].filter(Boolean);
+        if (chip === "Executive tone")
+          return [...base, "Use concise, executive-ready wording."];
+        if (chip === "Include calendar blocks")
+          return [...base, "Block calendar time for each priority."];
+        return base;
       }
-      // Scenario 3 — Goal Progress Tracking
       case 3: {
-        switch (activeChip) {
-          case "Shorter (≤80 words)":
-            // Focus on the essentials
-            return base.slice(0, 3);
-          case "More empathetic":
-            return [...base, "Tone: empathetic and supportive."];
-          case "Data-driven framing":
-            return [...base, "Add one data point to support the view."];
-          case "Add checklist for tomorrow":
-            return [...base, "Checklist: [ ] task 1  [ ] task 2  [ ] task 3"];
-          default:
-            return base;
-        }
+        if (chip === "Shorter (≤80 words)") return base.slice(0, 3);
+        if (chip === "More empathetic")
+          return [...base, "Tone: empathetic and supportive."];
+        if (chip === "Data-driven framing")
+          return [...base, "Add one data point to support the view."];
+        if (chip === "Add checklist for tomorrow")
+          return [...base, "Checklist: [ ] task 1  [ ] task 2  [ ] task 3"];
+        return base;
       }
       default:
         return base;
     }
-  }, [scenario, activeChip]);
+  }, [scenario, activeChip, DATA]);
 
-  // ----- Handlers -----
+  /** Handlers */
   const openScenario = (id: ScenarioId) => {
     setScenario(id);
-    setActiveChip(null);            // clear chip when changing scenarios
     setView("scenario");
     window?.scrollTo?.({ top: 0, behavior: "smooth" });
   };
@@ -272,7 +259,7 @@ export default function LessonPage() {
                 >
                   <div className="flex items-center justify-between">
                     <div>
-                      <div className="tile-title text-2xl font-bold">{DATA[id].title}</div>
+                      <div className="text-2xl font-bold">{DATA[id].title}</div>
                       <div className="text-slate-700">{DATA[id].subtitle}</div>
                     </div>
                     <span className="text-3xl leading-none">›</span>
@@ -306,21 +293,26 @@ export default function LessonPage() {
 
             <Section title="Adjust the Result">
               <div className="flex flex-wrap gap-2">
-                {data.chips.map((c) => {
-                  const on = activeChip === c;
+                {data.chips.map((label) => {
+                  const on = activeChip[scenario] === label;
                   return (
                     <button
-                      key={c}
+                      key={label}
                       type="button"
-                      onClick={() => setActiveChip(on ? null : c)} // single-select toggle
+                      onClick={() =>
+                        setActiveChip((prev) => ({
+                          ...prev,
+                          [scenario]: on ? null : label, // single-select toggle
+                        }))
+                      }
                       aria-pressed={on}
-                      className={`rounded-full border px-3.5 py-2 text-sm font-semibold ${
+                      className={`rounded-full border px-3.5 py-2 text-sm font-semibold transition ${
                         on
-                          ? "border-slate-300 bg-slate-200 ring-2 ring-blue-400"
-                          : "border-slate-200 bg-slate-100 hover:bg-slate-200"
+                          ? "bg-slate-900 text-white border-slate-900"
+                          : "bg-white text-slate-900 border-slate-300 hover:bg-slate-100"
                       }`}
                     >
-                      {c}
+                      {label}
                     </button>
                   );
                 })}
@@ -331,7 +323,7 @@ export default function LessonPage() {
               <b>Pro Tip —</b> {data.protip}
             </Section>
 
-            {/* Real button, unchanged style */}
+            {/* Real button (as requested) */}
             <button className="btn-primary" onClick={openTask}>
               Try the Task
             </button>
@@ -342,6 +334,7 @@ export default function LessonPage() {
         {view === "task" && (
           <div className="space-y-4">
             <h2 className="text-2xl font-bold">{data.title}</h2>
+
             <Section tone="banner">
               <b>Task Goal —</b> {data.taskGoal}
             </Section>
@@ -426,7 +419,7 @@ export default function LessonPage() {
         )}
       </main>
 
-      {/* Local utility styles (Tailwind required) */}
+      {/* Tiny utility styles (Tailwind) */}
       <style jsx global>{`
         body.lesson-force-opaque,
         body.lesson-force-opaque * {
@@ -458,7 +451,7 @@ export default function LessonPage() {
   );
 }
 
-/* ---------- Small primitive ---------- */
+/** Small section primitive */
 function Section({
   title,
   tone = "default",
