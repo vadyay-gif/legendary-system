@@ -8,8 +8,8 @@ import Header from "@/components/Header";
 type View = "picker" | "scenario" | "task" | "complete";
 type ScenarioId = 1 | 2 | 3;
 
-/** Page */
 export default function LessonPage() {
+  // keep page fully opaque (if you had any fades elsewhere)
   useEffect(() => {
     document.body.classList.add("lesson-force-opaque");
     return () => document.body.classList.remove("lesson-force-opaque");
@@ -17,11 +17,15 @@ export default function LessonPage() {
 
   const [view, setView] = useState<View>("picker");
   const [scenario, setScenario] = useState<ScenarioId>(1);
+
+  // one active chip per scenario (null means default)
   const [activeChip, setActiveChip] = useState<Record<ScenarioId, string | null>>({
     1: null,
     2: null,
     3: null,
   });
+
+  // task state
   const [checked, setChecked] = useState<Record<number, boolean>>({});
   const [showResult, setShowResult] = useState(false);
 
@@ -36,6 +40,7 @@ export default function LessonPage() {
       response: string[];
       chips: string[];
       protip: string;
+
       taskGoal: string;
       taskOptions: string[];
       assembled: string;
@@ -65,6 +70,7 @@ export default function LessonPage() {
         "Manager view (add stakeholder note)",
       ],
       protip: "Keep reflection prompts consistent but allow for personal interpretation.",
+
       taskGoal: "Create 5 daily reflection prompts for productivity and growth.",
       taskOptions: [
         "Include win/achievement prompt",
@@ -101,6 +107,7 @@ export default function LessonPage() {
         "Include calendar blocks",
       ],
       protip: "Convert “Next-Week Plan” into calendar holds immediately.",
+
       taskGoal:
         "Turn last week's notes into a Monday plan with Highlights, Metrics, Lessons, Risks, and a Next-Week Plan.",
       taskOptions: [
@@ -131,6 +138,7 @@ export default function LessonPage() {
       ],
       protip:
         "Name the feeling → write the fact → choose one step. That’s the reset.",
+
       taskGoal:
         "Reframe a stressful event into Facts, Thoughts, Alternative View, One Next Step (≤120 words).",
       taskOptions: [
@@ -147,14 +155,14 @@ export default function LessonPage() {
     },
   };
 
-  /** Adjusted AI Response builder */
+  /** Adjusted AI Response preview */
   const previewResponse = useMemo(() => {
     const base = [...DATA[scenario].response];
     const chip = activeChip[scenario];
     if (!chip) return base;
 
     switch (scenario) {
-      case 1:
+      case 1: {
         if (chip === "Shorter (3 questions)") return base.slice(0, 3);
         if (chip === "More reflective (add feeling check)")
           return [...base, "How did I feel today (1–2 words)?"];
@@ -162,8 +170,9 @@ export default function LessonPage() {
           return [...base, "What single action will I take tomorrow?"];
         if (chip === "Manager view (add stakeholder note)")
           return [...base, "Any stakeholder to update? What will I say?"];
-        break;
-      case 2:
+        return base;
+      }
+      case 2: {
         if (chip === "Add metrics table")
           return [...base, "Metrics Table: | Metric | Target | Actual |"];
         if (chip === "Reduce to one-pager")
@@ -172,8 +181,9 @@ export default function LessonPage() {
           return [...base, "Use concise, executive-ready wording."];
         if (chip === "Include calendar blocks")
           return [...base, "Block calendar time for each priority."];
-        break;
-      case 3:
+        return base;
+      }
+      case 3: {
         if (chip === "Shorter (≤80 words)") return base.slice(0, 3);
         if (chip === "More empathetic")
           return [...base, "Tone: empathetic and supportive."];
@@ -181,11 +191,14 @@ export default function LessonPage() {
           return [...base, "Add one data point to support the view."];
         if (chip === "Add checklist for tomorrow")
           return [...base, "Checklist: [ ] task 1  [ ] task 2  [ ] task 3"];
-        break;
+        return base;
+      }
+      default:
+        return base;
     }
-    return base;
   }, [scenario, activeChip, DATA]);
 
+  /** Handlers */
   const openScenario = (id: ScenarioId) => {
     setScenario(id);
     setView("scenario");
@@ -211,7 +224,7 @@ export default function LessonPage() {
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900">
-      {/* Keep the main site header (logo + buttons) */}
+      {/* Main site header (logo + nav) */}
       <Header current="lesson" />
 
       <main className="mx-auto max-w-5xl px-4 pb-24 pt-6">
@@ -271,7 +284,7 @@ export default function LessonPage() {
                       onClick={() =>
                         setActiveChip((prev) => ({
                           ...prev,
-                          [scenario]: on ? null : label,
+                          [scenario]: on ? null : label, // single-select toggle
                         }))
                       }
                       aria-pressed={on}
@@ -292,14 +305,14 @@ export default function LessonPage() {
               <b>Pro Tip —</b> {data.protip}
             </Section>
 
-            <div className="flex justify-center mt-6">
-  <button
-    onClick={openTask}
-    className="rounded-full bg-blue-600 px-6 py-3 text-white font-semibold shadow-md hover:bg-blue-700 transition"
-  >
-    Try the Task
-  </button>
-</div>        )}
+            {/* Centered primary action */}
+            <div className="mt-6 flex justify-center">
+              <button onClick={openTask} className="btn-ai">
+                Try the Task
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* TASK */}
         {view === "task" && (
@@ -331,7 +344,8 @@ export default function LessonPage() {
               ))}
             </div>
 
-            <div className="grid gap-3 md:grid-cols-2">
+            {/* Actions */}
+            <div className="flex flex-wrap items-center justify-center gap-3">
               <button
                 className="btn-ghost"
                 onClick={() => alert("Not finished yet — You skipped the task.")}
@@ -339,7 +353,7 @@ export default function LessonPage() {
                 Skip
               </button>
               <button
-                className="btn-outline disabled:opacity-50"
+                className="btn-ai disabled:opacity-50"
                 disabled={Object.values(checked).every((v) => !v)}
                 onClick={checkAnswer}
               >
@@ -361,9 +375,12 @@ export default function LessonPage() {
                   />
                   <p className="mt-2 text-slate-600">{data.kicker}</p>
                 </Section>
-                <button className="btn-primary" onClick={() => setView("complete")}>
-                  Done
-                </button>
+
+                <div className="mt-2 flex justify-center">
+                  <button className="btn-ai" onClick={() => setView("complete")}>
+                    Done
+                  </button>
+                </div>
               </div>
             )}
           </div>
@@ -382,7 +399,7 @@ export default function LessonPage() {
               <button className="btn-ghost" onClick={() => setView("picker")}>
                 Back to Tracks
               </button>
-              <button className="btn-primary" onClick={() => setView("picker")}>
+              <button className="btn-ai" onClick={() => setView("picker")}>
                 Another Scenario
               </button>
             </div>
@@ -390,20 +407,19 @@ export default function LessonPage() {
         )}
       </main>
 
-      {/* Utility styles */}
+      {/* Utility styles (Tailwind) */}
       <style jsx global>{`
         body.lesson-force-opaque,
         body.lesson-force-opaque * {
           opacity: 1 !important;
         }
-        .btn-primary {
-          @apply w-full rounded-full bg-blue-500 px-5 py-3 font-extrabold text-white shadow hover:bg-blue-600;
+        /* Primary AI Ready button */
+        .btn-ai {
+          @apply rounded-full bg-blue-600 px-6 py-3 font-semibold text-white shadow-md hover:bg-blue-700 transition;
         }
-        .btn-outline {
-          @apply w-full rounded-full border-2 border-blue-500 px-5 py-3 font-extrabold text-blue-600 hover:bg-blue-50;
-        }
+        /* Secondary/ghost button */
         .btn-ghost {
-          @apply w-full rounded-full border-2 border-slate-300 px-5 py-3 font-extrabold text-slate-800 hover:bg-slate-50;
+          @apply rounded-full border-2 border-slate-300 px-6 py-3 font-semibold text-slate-800 hover:bg-slate-50 transition;
         }
         .ok-panel {
           @apply flex items-center gap-2 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-emerald-800;
