@@ -10,7 +10,6 @@ type ScenarioId = 1 | 2 | 3;
 
 /** Page */
 export default function LessonPage() {
-  // keep page fully opaque (if you had a fade elsewhere)
   useEffect(() => {
     document.body.classList.add("lesson-force-opaque");
     return () => document.body.classList.remove("lesson-force-opaque");
@@ -18,15 +17,11 @@ export default function LessonPage() {
 
   const [view, setView] = useState<View>("picker");
   const [scenario, setScenario] = useState<ScenarioId>(1);
-
-  // one active chip per scenario (null means default)
   const [activeChip, setActiveChip] = useState<Record<ScenarioId, string | null>>({
     1: null,
     2: null,
     3: null,
   });
-
-  // task state
   const [checked, setChecked] = useState<Record<number, boolean>>({});
   const [showResult, setShowResult] = useState(false);
 
@@ -38,11 +33,9 @@ export default function LessonPage() {
       subtitle: string;
       situation: string;
       ask: string;
-      response: string[]; // base “AI’s Response”
-      chips: string[]; // chip labels shown
+      response: string[];
+      chips: string[];
       protip: string;
-
-      // task bits
       taskGoal: string;
       taskOptions: string[];
       assembled: string;
@@ -72,7 +65,6 @@ export default function LessonPage() {
         "Manager view (add stakeholder note)",
       ],
       protip: "Keep reflection prompts consistent but allow for personal interpretation.",
-
       taskGoal: "Create 5 daily reflection prompts for productivity and growth.",
       taskOptions: [
         "Include win/achievement prompt",
@@ -109,7 +101,6 @@ export default function LessonPage() {
         "Include calendar blocks",
       ],
       protip: "Convert “Next-Week Plan” into calendar holds immediately.",
-
       taskGoal:
         "Turn last week's notes into a Monday plan with Highlights, Metrics, Lessons, Risks, and a Next-Week Plan.",
       taskOptions: [
@@ -140,7 +131,6 @@ export default function LessonPage() {
       ],
       protip:
         "Name the feeling → write the fact → choose one step. That’s the reset.",
-
       taskGoal:
         "Reframe a stressful event into Facts, Thoughts, Alternative View, One Next Step (≤120 words).",
       taskOptions: [
@@ -157,21 +147,14 @@ export default function LessonPage() {
     },
   };
 
-  /** Title per view */
-  const title = useMemo(() => {
-    if (view === "picker") return "Choose a Scenario";
-    if (view === "complete") return "Scenario Complete";
-    return DATA[scenario].title;
-  }, [view, scenario]);
-
-  /** Build the adjusted “AI’s Response” for the open scenario */
+  /** Adjusted AI Response builder */
   const previewResponse = useMemo(() => {
     const base = [...DATA[scenario].response];
     const chip = activeChip[scenario];
     if (!chip) return base;
 
     switch (scenario) {
-      case 1: {
+      case 1:
         if (chip === "Shorter (3 questions)") return base.slice(0, 3);
         if (chip === "More reflective (add feeling check)")
           return [...base, "How did I feel today (1–2 words)?"];
@@ -179,9 +162,8 @@ export default function LessonPage() {
           return [...base, "What single action will I take tomorrow?"];
         if (chip === "Manager view (add stakeholder note)")
           return [...base, "Any stakeholder to update? What will I say?"];
-        return base;
-      }
-      case 2: {
+        break;
+      case 2:
         if (chip === "Add metrics table")
           return [...base, "Metrics Table: | Metric | Target | Actual |"];
         if (chip === "Reduce to one-pager")
@@ -190,9 +172,8 @@ export default function LessonPage() {
           return [...base, "Use concise, executive-ready wording."];
         if (chip === "Include calendar blocks")
           return [...base, "Block calendar time for each priority."];
-        return base;
-      }
-      case 3: {
+        break;
+      case 3:
         if (chip === "Shorter (≤80 words)") return base.slice(0, 3);
         if (chip === "More empathetic")
           return [...base, "Tone: empathetic and supportive."];
@@ -200,14 +181,11 @@ export default function LessonPage() {
           return [...base, "Add one data point to support the view."];
         if (chip === "Add checklist for tomorrow")
           return [...base, "Checklist: [ ] task 1  [ ] task 2  [ ] task 3"];
-        return base;
-      }
-      default:
-        return base;
+        break;
     }
+    return base;
   }, [scenario, activeChip, DATA]);
 
-  /** Handlers */
   const openScenario = (id: ScenarioId) => {
     setScenario(id);
     setView("scenario");
@@ -233,22 +211,8 @@ export default function LessonPage() {
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900">
-      {/* Site header — same as main page */}
+      {/* Keep the main site header (logo + buttons) */}
       <Header current="lesson" />
-
-      {/* Subheader with back arrow to homepage + dynamic title */}
-      <div className="sticky top-[56px] z-10 border-b bg-white/80 backdrop-blur">
-        <div className="mx-auto flex max-w-5xl items-center gap-3 px-4 py-3">
-          <a
-            href="https://getaiready.app"
-            className="grid h-9 w-9 place-items-center rounded-full bg-slate-100 hover:bg-slate-200 transition"
-            aria-label="Back to homepage"
-          >
-            ←
-          </a>
-          <h1 className="text-xl font-bold md:text-2xl">{title}</h1>
-        </div>
-      </div>
 
       <main className="mx-auto max-w-5xl px-4 pb-24 pt-6">
         {/* PICKER */}
@@ -307,7 +271,7 @@ export default function LessonPage() {
                       onClick={() =>
                         setActiveChip((prev) => ({
                           ...prev,
-                          [scenario]: on ? null : label, // single-select toggle
+                          [scenario]: on ? null : label,
                         }))
                       }
                       aria-pressed={on}
@@ -423,7 +387,7 @@ export default function LessonPage() {
         )}
       </main>
 
-      {/* Tiny utility styles (Tailwind) */}
+      {/* Utility styles */}
       <style jsx global>{`
         body.lesson-force-opaque,
         body.lesson-force-opaque * {
@@ -455,7 +419,7 @@ export default function LessonPage() {
   );
 }
 
-/** Small section primitive */
+/** Reusable section block */
 function Section({
   title,
   tone = "default",
