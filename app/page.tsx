@@ -1,3 +1,4 @@
+/* eslint-disable react/no-unescaped-entities */
 "use client";
 
 import Header from "@/components/Header";
@@ -9,6 +10,7 @@ export default function Page() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white text-slate-900">
       <Header current="home" />
+
       <main>
         {/* HERO */}
         <section className="mx-auto max-w-6xl px-4 py-16 grid md:grid-cols-2 gap-8 items-center">
@@ -19,6 +21,7 @@ export default function Page() {
             <p className="mt-4 text-lg text-slate-600">
               Every scenario is a short, practical exercise powered by AI.
             </p>
+
             <div className="mt-6 flex flex-wrap gap-3">
               <a
                 href="/funnel"
@@ -41,8 +44,8 @@ export default function Page() {
           </div>
         </section>
 
-        {/* STATS SECTION */}
-        <section className="mt-3 grid grid-cols-3 gap-3 text-center">
+        {/* STATS */}
+        <section className="mt-3 grid grid-cols-3 gap-3 text-center px-4 max-w-6xl mx-auto">
           <div className="rounded-xl bg-slate-50 border p-3">9 Tracks</div>
           <div className="rounded-xl bg-slate-50 border p-3">135 Scenarios</div>
           <div className="rounded-xl bg-slate-50 border p-3">Daily Tips</div>
@@ -51,8 +54,9 @@ export default function Page() {
         {/* FEATURES */}
         <section id="features" className="mx-auto max-w-6xl px-4 py-12">
           <h2 className="text-2xl font-semibold mb-8 text-center">
-            What you'll master
+            What you&apos;ll master
           </h2>
+
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {[
               {
@@ -110,6 +114,7 @@ export default function Page() {
           </div>
         </section>
       </main>
+
       <Footer />
     </div>
   );
