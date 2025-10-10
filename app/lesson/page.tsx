@@ -292,11 +292,14 @@ export default function LessonPage() {
               <b>Pro Tip —</b> {data.protip}
             </Section>
 
-            <button className="btn-primary" onClick={openTask}>
-              Try the Task
-            </button>
-          </div>
-        )}
+            <div className="flex justify-center mt-6">
+  <button
+    onClick={openTask}
+    className="rounded-full bg-blue-600 px-6 py-3 text-white font-semibold shadow-md hover:bg-blue-700 transition"
+  >
+    Try the Task
+  </button>
+</div>        )}
 
         {/* TASK */}
         {view === "task" && (
