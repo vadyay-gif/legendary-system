@@ -11,16 +11,17 @@ export default function Page() {
       <Header current="home" />
 
       <main>
-        {/* HERO */}
+        {/* HERO SECTION */}
         <section className="mx-auto max-w-6xl px-4 py-16 grid md:grid-cols-2 gap-8 items-center">
-          {/* Left column */}
+          {/* Left side */}
           <div>
             <h1 className="text-4xl md:text-5xl font-bold tracking-tight">
               Learn to use AI at work in minutes a day
             </h1>
 
             <p className="mt-4 text-lg text-slate-600">
-              Practical, role-based lessons. 9 tracks x 5 lessons x 3 scenarios. Built for busy professionals.
+              Practical, role-based lessons. 9 tracks × 5 lessons × 3 scenarios.
+              Built for busy professionals.
             </p>
 
             <div className="mt-6 flex flex-col sm:flex-row gap-3">
@@ -39,7 +40,7 @@ export default function Page() {
             </div>
           </div>
 
-          {/* Right column */}
+          {/* Right side with demo */}
           <div>
             <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm">
               <AIReadyScenarioDemo />
@@ -53,28 +54,49 @@ export default function Page() {
           </div>
         </section>
 
-        {/* FEATURES */}
+        {/* FEATURES SECTION */}
         <section id="features" className="mx-auto max-w-6xl px-4 py-12">
-          <h2 className="text-2xl font-semibold">What you will master</h2>
+          <h2 className="text-2xl font-semibold">What you’ll master</h2>
 
           <div className="mt-6 grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {[
-              { title: "Emails & Tone", desc: "Get to inbox zero with smart replies and tone control." },
-              { title: "Meetings to Action", desc: "Capture decisions, assign owners, and follow up." },
-              { title: "Executive Summaries", desc: "Condense long docs into crisp briefings." },
-              { title: "Data to Insights", desc: "Turn spreadsheets into charts and KPI snapshots." },
-              { title: "Marketing & Social", desc: "From idea to multi-platform posts fast." },
-              { title: "Research & Analysis", desc: "Find sources, compare options, decide confidently." }
-            ].map((c) => (
-              <div key={c.title} className="rounded-2xl border bg-white p-5 shadow-sm">
-                <div className="text-sm font-semibold">{c.title}</div>
-                <div className="mt-1 text-slate-600 text-sm">{c.desc}</div>
+              {
+                title: "Emails & Tone",
+                desc: "Get to inbox zero with smart replies and tone control.",
+              },
+              {
+                title: "Meetings → Action",
+                desc: "Capture decisions, assign owners, and follow up.",
+              },
+              {
+                title: "Executive Summaries",
+                desc: "Condense long docs into crisp briefings.",
+              },
+              {
+                title: "Data → Insights",
+                desc: "Turn spreadsheets into charts and KPI snapshots.",
+              },
+              {
+                title: "Marketing & Social",
+                desc: "From idea to multi-platform posts fast.",
+              },
+              {
+                title: "Research & Analysis",
+                desc: "Find sources, compare options, decide confidently.",
+              },
+            ].map((item) => (
+              <div
+                key={item.title}
+                className="rounded-2xl border bg-white p-5 shadow-sm"
+              >
+                <div className="text-sm font-semibold">{item.title}</div>
+                <div className="mt-1 text-slate-600 text-sm">{item.desc}</div>
               </div>
             ))}
           </div>
         </section>
 
-        {/* FAQ */}
+        {/* FAQ SECTION */}
         <section id="faq" className="mx-auto max-w-6xl px-4 py-12">
           <h3 className="text-xl font-semibold">FAQ</h3>
 
