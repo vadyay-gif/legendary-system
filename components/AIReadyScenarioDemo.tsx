@@ -1,3 +1,5 @@
+/* eslint-disable react/no-unescaped-entities */
+
 import React, { useMemo, useState } from "react";
 
 type Option = { id: string; label: string };
