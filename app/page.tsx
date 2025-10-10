@@ -9,17 +9,19 @@ export default function Page() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white text-slate-900">
       <Header current="home" />
+
       <main>
         {/* HERO */}
         <section className="mx-auto max-w-6xl px-4 py-16 grid md:grid-cols-2 gap-8 items-center">
+          {/* Left column */}
           <div>
             <h1 className="text-4xl md:text-5xl font-bold tracking-tight">
               Learn to use AI at work in minutes a day
             </h1>
 
             <p className="mt-4 text-lg text-slate-600">
-              Practical, role-based lessons. 9 tracks × 5 lessons × 3 scenarios.
-              Built for busy professionals.
+              Practical, role-based lessons. 9 tracks × 5 lessons × 3 scenarios. Built
+              for busy professionals.
             </p>
 
             <div className="mt-6 flex flex-col sm:flex-row gap-3">
@@ -38,6 +40,7 @@ export default function Page() {
             </div>
           </div>
 
+          {/* Right column */}
           <div>
             <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm">
               <AIReadyScenarioDemo />
@@ -81,8 +84,8 @@ export default function Page() {
                 title: "Research & Analysis",
                 desc: "Find sources, compare options, decide confidently.",
               },
-            ].map((c, i) => (
-              <div key={i} className="rounded-2xl border bg-white p-5 shadow-sm">
+            ].map((c) => (
+              <div key={c.title} className="rounded-2xl border bg-white p-5 shadow-sm">
                 <div className="text-sm font-semibold">{c.title}</div>
                 <div className="mt-1 text-slate-600 text-sm">{c.desc}</div>
               </div>
@@ -93,6 +96,7 @@ export default function Page() {
         {/* FAQ */}
         <section id="faq" className="mx-auto max-w-6xl px-4 py-12">
           <h3 className="text-xl font-semibold">FAQ</h3>
+
           <div className="mt-6 space-y-4">
             <Faq
               q="Who is AI Ready for?"
