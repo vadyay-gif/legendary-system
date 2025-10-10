@@ -314,11 +314,11 @@ export default function LessonPage() {
             {/* Actions */}
             <div className="flex flex-wrap items-center justify-center gap-3">
               <button
-                className="inline-flex items-center rounded-full border border-slate-300 px-6 py-3 font-semibold text-slate-800 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-300"
-                onClick={() => alert("Not finished yet — You skipped the task.")}
-              >
-                Skip
-              </button>
+  className="inline-flex items-center rounded-full border border-slate-300 px-6 py-3 font-semibold text-slate-800 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-300"
+  onClick={() => setView("picker")}
+>
+  Skip
+</button>
               <button
                 className="inline-flex items-center rounded-full bg-blue-600 px-6 py-3 text-white font-semibold shadow-sm hover:bg-blue-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 disabled:opacity-50"
                 disabled={Object.values(checked).every((v) => !v)}
