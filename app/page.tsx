@@ -6,7 +6,7 @@ import AIReadyScenarioDemo from "@/components/AIReadyScenarioDemo";
 
 export default function Page() {
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white text-slate-900">
+    <div className="min-h-screen bg-white text-slate-900">
       <Header current="home" />
       <main>
         <section className="mx-auto max-w-6xl px-4 py-16 grid md:grid-cols-2 gap-8 items-center">
@@ -15,19 +15,13 @@ export default function Page() {
               Learn to use AI at work in minutes a day
             </h1>
             <p className="mt-4 text-lg text-slate-600">
-              Practical, role-based lessons. 9 tracks x 5 lessons x 3 scenarios. Built for busy professionals.
+              Practical, role-based lessons. 9 tracks x 5 lessons x 3 scenarios.
             </p>
             <div className="mt-6 flex flex-col sm:flex-row gap-3">
-              <a
-                href="/funnel"
-                className="px-5 py-3 rounded-xl bg-slate-900 text-white text-center"
-              >
+              <a href="/funnel" className="px-5 py-3 rounded-xl bg-slate-900 text-white text-center">
                 Take the 2-minute quiz
               </a>
-              <a
-                href="/lesson"
-                className="px-5 py-3 rounded-xl border border-slate-300 text-center"
-              >
+              <a href="/lesson" className="px-5 py-3 rounded-xl border border-slate-300 text-center">
                 See how it works
               </a>
             </div>
