@@ -16,10 +16,12 @@ export default function Page() {
             <h1 className="text-4xl md:text-5xl font-bold tracking-tight">
               Learn to use AI at work in minutes a day
             </h1>
+
             <p className="mt-4 text-lg text-slate-600">
               Practical, role-based lessons. 9 tracks × 5 lessons × 3 scenarios.
               Built for busy professionals.
             </p>
+
             <div className="mt-6 flex flex-col sm:flex-row gap-3">
               <a
                 href="/funnel"
@@ -36,20 +38,23 @@ export default function Page() {
             </div>
           </div>
 
-          <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm">
-            <AIReadyScenarioDemo />
-          </div>
+          <div>
+            <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm">
+              <AIReadyScenarioDemo />
+            </div>
 
-          <div className="mt-3 grid grid-cols-3 gap-3 text-center md:col-span-2">
-            <div className="rounded-xl bg-slate-50 border p-3">9 Tracks</div>
-            <div className="rounded-xl bg-slate-50 border p-3">135 Scenarios</div>
-            <div className="rounded-xl bg-slate-50 border p-3">Daily Tips</div>
+            <div className="mt-3 grid grid-cols-3 gap-3 text-center">
+              <div className="rounded-xl bg-slate-50 border p-3">9 Tracks</div>
+              <div className="rounded-xl bg-slate-50 border p-3">135 Scenarios</div>
+              <div className="rounded-xl bg-slate-50 border p-3">Daily Tips</div>
+            </div>
           </div>
         </section>
 
         {/* FEATURES */}
         <section id="features" className="mx-auto max-w-6xl px-4 py-12">
           <h2 className="text-2xl font-semibold">What you’ll master</h2>
+
           <div className="mt-6 grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {[
               {
@@ -104,6 +109,7 @@ export default function Page() {
           </div>
         </section>
       </main>
+
       <Footer />
     </div>
   );
