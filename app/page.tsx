@@ -20,8 +20,7 @@ export default function Page() {
             </h1>
 
             <p className="mt-4 text-lg text-slate-600">
-              Practical, role-based lessons. 9 tracks × 5 lessons × 3 scenarios. Built
-              for busy professionals.
+              Practical, role-based lessons. 9 tracks x 5 lessons x 3 scenarios. Built for busy professionals.
             </p>
 
             <div className="mt-6 flex flex-col sm:flex-row gap-3">
@@ -56,34 +55,16 @@ export default function Page() {
 
         {/* FEATURES */}
         <section id="features" className="mx-auto max-w-6xl px-4 py-12">
-          <h2 className="text-2xl font-semibold">What you’ll master</h2>
+          <h2 className="text-2xl font-semibold">What you will master</h2>
 
           <div className="mt-6 grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {[
-              {
-                title: "Emails & Tone",
-                desc: "Get to inbox zero with smart replies and tone control.",
-              },
-              {
-                title: "Meetings → Action",
-                desc: "Capture decisions, assign owners, and follow up.",
-              },
-              {
-                title: "Executive Summaries",
-                desc: "Condense long docs into crisp briefings.",
-              },
-              {
-                title: "Data → Insights",
-                desc: "Turn spreadsheets into charts and KPI snapshots.",
-              },
-              {
-                title: "Marketing & Social",
-                desc: "From idea to multi-platform posts fast.",
-              },
-              {
-                title: "Research & Analysis",
-                desc: "Find sources, compare options, decide confidently.",
-              },
+              { title: "Emails & Tone", desc: "Get to inbox zero with smart replies and tone control." },
+              { title: "Meetings to Action", desc: "Capture decisions, assign owners, and follow up." },
+              { title: "Executive Summaries", desc: "Condense long docs into crisp briefings." },
+              { title: "Data to Insights", desc: "Turn spreadsheets into charts and KPI snapshots." },
+              { title: "Marketing & Social", desc: "From idea to multi-platform posts fast." },
+              { title: "Research & Analysis", desc: "Find sources, compare options, decide confidently." }
             ].map((c) => (
               <div key={c.title} className="rounded-2xl border bg-white p-5 shadow-sm">
                 <div className="text-sm font-semibold">{c.title}</div>
@@ -118,4 +99,3 @@ export default function Page() {
     </div>
   );
 }
-Fix page.tsx build issue
