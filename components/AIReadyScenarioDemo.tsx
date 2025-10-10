@@ -1,7 +1,7 @@
 /* eslint-disable react/no-unescaped-entities */
 "use client";
 
-import React, { useMemo, useState } from "react";
+import React, { useState, useMemo } from "react";
 
 type Option = { id: string; label: string };
 
@@ -24,8 +24,9 @@ const adjustments: Option[] = [
   { id: "softer", label: "Softer tone" },
 ];
 
-const SAMPLE_COMPLAINT = `I received my order late and two items were missing.
-No one replied to my previous email. This is very frustrating.`;
+const SAMPLE_COMPLAINT =
+  `I received my order late and two items were missing.\n` +
+  `No one replied to my previous email. This is very frustrating.`;
 
 const greetings: Record<string, string> = {
   warm: "Hi",
@@ -104,6 +105,37 @@ function makeReply(
   return `Subject: ${subj}\n\n${greet} there,\n\n${core}\n\n${close},\nCustomer Support`;
 }
 
+/** Tailwind UI tokens (kept here so the look stays consistent with the app) */
+const cls = {
+  tag: "inline-flex items-center rounded-full border border-slate-200 bg-white px-2.5 py-1 text-[11px] font-medium text-slate-700 shadow-sm",
+  h3: "text-[26px] sm:text-[28px] font-extrabold tracking-tight text-slate-800",
+  sub: "mt-1 text-[13px] leading-5 text-slate-600",
+  card: "rounded-2xl border border-slate-200 bg-white p-4 sm:p-5 shadow-sm",
+  label: "block text-[12px] font-medium text-slate-700",
+  input:
+    "w-full rounded-xl border border-slate-200 bg-slate-50/60 px-3 py-2 text-[14px] text-slate-800 outline-none ring-0 focus:border-blue-400 focus:bg-white transition",
+  textarea:
+    "w-full min-h-[120px] rounded-xl border border-slate-200 bg-slate-50/60 px-3 py-2 text-[14px] text-slate-800 outline-none ring-0 focus:border-blue-400 focus:bg-white transition",
+  pill:
+    "inline-flex items-center rounded-full border px-3 py-2 text-[13px] font-semibold transition select-none",
+  pillOn:
+    "border-blue-500 bg-blue-600 text-white shadow-md shadow-blue-500/30",
+  pillOff:
+    "border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50",
+  chip:
+    "inline-flex items-center rounded-full border px-3 py-1.5 text-[12px] font-medium transition select-none",
+  chipOn: "border-blue-300 bg-blue-50 text-blue-800",
+  chipOff:
+    "border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100 hover:border-slate-300",
+  primaryBtn:
+    "inline-flex items-center justify-center rounded-xl bg-slate-900 px-4 py-2.5 text-[14px] font-bold text-white shadow-sm hover:shadow transition",
+  secondaryBtn:
+    "inline-flex items-center justify-center rounded-xl bg-slate-700 px-4 py-2.5 text-[14px] font-bold text-white/95 hover:bg-slate-800 transition",
+  hint: "text-[12px] text-slate-500",
+  answerCard: "rounded-2xl border-l-4 border-blue-600 bg-white p-4 sm:p-5 shadow-sm",
+  pre: "mt-1 whitespace-pre-wrap rounded-xl border border-slate-200 bg-slate-50 p-3 text-[13px] text-slate-800",
+};
+
 export default function AIReadyScenarioDemo() {
   const [order, setOrder] = useState("");
   const [complaint, setComplaint] = useState(SAMPLE_COMPLAINT);
@@ -115,107 +147,124 @@ export default function AIReadyScenarioDemo() {
   const output = useMemo(() => out, [out]);
 
   return (
-    <section className="wrap" aria-label="AI Ready scenario demo">
-      <div className="head">
-        <span className="tag">Track: Everyday Communication</span>
-        <span className="tag">Scenario Demo</span>
+    <section aria-label="AI Ready scenario demo" className="space-y-3">
+      {/* header tags + title */}
+      <div className="flex flex-wrap items-center gap-2">
+        <span className={cls.tag}>Track: Everyday Communication</span>
+        <span className={cls.tag}>Scenario Demo</span>
       </div>
 
-      <h3 className="title">Reply to a Customer Complaint</h3>
-      <p className="sub">
+      <h3 className={cls.h3}>Reply to a Customer Complaint</h3>
+      <p className={cls.sub}>
         Craft a thoughtful, effective response that acknowledges the issue and
         outlines the fix.
       </p>
 
-      <div className="card">
-        <div className="grid">
-          <div className="field">
-            <label>Order / Ticket # (optional)</label>
+      {/* main card */}
+      <div className={cls.card}>
+        {/* top controls */}
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <div>
+            <label className={cls.label}>Order / Ticket # (optional)</label>
             <input
-              type="text"
+              className={cls.input}
               placeholder="e.g. #A12489"
               value={order}
               onChange={(e) => setOrder(e.target.value)}
             />
           </div>
 
-          <div className="field">
-            <label>Choose reply tone</label>
-            <div className="options" role="radiogroup" aria-label="Tone">
-              {toneOptions.map((o) => (
-                <button
-                  key={o.id}
-                  className={`opt ${tone.id === o.id ? "on" : ""}`}
-                  role="radio"
-                  aria-checked={tone.id === o.id}
-                  onClick={() => setTone(o)}
-                  type="button"
-                >
-                  {o.label}
-                </button>
-              ))}
+          <div>
+            <label className={cls.label}>Choose reply tone</label>
+            <div className="mt-1.5 flex flex-wrap gap-2">
+              {toneOptions.map((o) => {
+                const on = tone.id === o.id;
+                return (
+                  <button
+                    key={o.id}
+                    type="button"
+                    className={`${cls.pill} ${on ? cls.pillOn : cls.pillOff}`}
+                    aria-checked={on}
+                    role="radio"
+                    onClick={() => setTone(o)}
+                  >
+                    {o.label}
+                  </button>
+                );
+              })}
             </div>
           </div>
         </div>
 
-        <div className="field">
-          <label>Paste the customer's complaint:</label>
+        {/* complaint box */}
+        <div className="mt-3">
+          <label className={cls.label}>Paste the customer's complaint:</label>
           <textarea
+            className={`${cls.textarea} mt-1.5`}
             value={complaint}
             onChange={(e) => setComplaint(e.target.value)}
             placeholder={SAMPLE_COMPLAINT.replace(/\n/g, " ")}
           />
         </div>
 
-        <div className="grid">
-          <div className="field">
-            <label>Objective</label>
-            <div className="options" role="radiogroup" aria-label="Objective">
-              {objectiveOptions.map((o) => (
-                <button
-                  key={o.id}
-                  className={`opt ${objective.id === o.id ? "on" : ""}`}
-                  role="radio"
-                  aria-checked={objective.id === o.id}
-                  onClick={() => setObjective(o)}
-                  type="button"
-                >
-                  {o.label}
-                </button>
-              ))}
+        {/* objectives + adjust */}
+        <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <div>
+            <label className={cls.label}>Objective</label>
+            <div className="mt-1.5 flex flex-wrap gap-2">
+              {objectiveOptions.map((o) => {
+                const on = objective.id === o.id;
+                return (
+                  <button
+                    key={o.id}
+                    type="button"
+                    className={`${cls.pill} ${on ? cls.pillOn : cls.pillOff}`}
+                    role="radio"
+                    aria-checked={on}
+                    onClick={() => setObjective(o)}
+                  >
+                    {o.label}
+                  </button>
+                );
+              })}
             </div>
           </div>
 
-          <div className="field">
-            <label>Adjust the Result (single select)</label>
-            <div className="chips" aria-label="Adjust">
-              {adjustments.map((a) => (
-                <button
-                  key={a.id}
-                  className={`chip ${adjust.id === a.id ? "on" : ""}`}
-                  aria-pressed={adjust.id === a.id}
-                  onClick={() => setAdjust(a)}
-                  type="button"
-                >
-                  {a.label}
-                </button>
-              ))}
+          <div>
+            <label className={cls.label}>Adjust the Result (single select)</label>
+            <div className="mt-1.5 flex flex-wrap gap-2">
+              {adjustments.map((a) => {
+                const on = adjust.id === a.id;
+                return (
+                  <button
+                    key={a.id}
+                    type="button"
+                    className={`${cls.chip} ${on ? cls.chipOn : cls.chipOff}`}
+                    aria-pressed={on}
+                    onClick={() => setAdjust(a)}
+                  >
+                    {a.label}
+                  </button>
+                );
+              })}
             </div>
           </div>
         </div>
 
-        <div className="cta">
+        {/* actions */}
+        <div className="mt-4 flex items-center gap-2">
           <button
-            className="btn primary"
+            type="button"
+            className={cls.primaryBtn}
             onClick={() =>
               setOut(makeReply(complaint, tone.id, objective.id, adjust.id, order))
             }
-            type="button"
           >
             Generate Reply
           </button>
           <button
-            className="btn"
+            type="button"
+            className={cls.secondaryBtn}
             onClick={() => {
               setOrder("");
               setComplaint(SAMPLE_COMPLAINT);
@@ -224,178 +273,22 @@ export default function AIReadyScenarioDemo() {
               setAdjust(adjustments[0]);
               setOut(null);
             }}
-            type="button"
           >
             Reset
           </button>
-          <span className="hint">No sign-in. Instant demo.</span>
+          <span className={cls.hint}>No sign-in. Instant demo.</span>
         </div>
       </div>
 
+      {/* answer */}
       {output && (
-        <div className="answer">
-          <div className="card answerCard">
-            <h4>Sample AI Reply</h4>
-            <pre>{output}</pre>
+        <div className={cls.answerCard}>
+          <div className="text-[14px] font-semibold text-slate-800">
+            Sample AI Reply
           </div>
+          <pre className={cls.pre}>{output}</pre>
         </div>
       )}
-
-      <style jsx>{`
-        .wrap {
-          width: 100%;
-          max-width: 980px;
-          margin: 0 auto;
-          padding: 22px;
-          background: linear-gradient(140deg, #f8fafc, #eef4fb);
-          border: 1px solid #e6ecf3;
-          border-radius: 20px;
-          box-shadow: 0 6px 24px rgba(16, 24, 40, 0.06);
-        }
-        .head {
-          display: flex;
-          gap: 10px;
-          align-items: center;
-          margin-bottom: 8px;
-        }
-        .tag {
-          font-size: 12px;
-          padding: 6px 10px;
-          border-radius: 999px;
-          border: 1px solid #d7e0ea;
-          background: #fff;
-          color: #0f2b46;
-        }
-        .title {
-          margin: 6px 0 4px;
-          font-weight: 800;
-          font-size: 22px;
-          color: #0f2b46;
-        }
-        .sub {
-          color: #476582;
-          font-size: 14px;
-          margin: 0 0 14px;
-        }
-        .card {
-          background: #fff;
-          border: 1px solid #e6ecf3;
-          border-radius: 16px;
-          padding: 16px;
-        }
-        .grid {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 12px;
-        }
-        @media (max-width: 800px) {
-          .grid {
-            grid-template-columns: 1fr;
-          }
-        }
-        .field {
-          margin-top: 14px;
-        }
-        label {
-          display: block;
-          font-size: 13px;
-          color: #223344;
-          margin-bottom: 6px;
-        }
-        input,
-        textarea {
-          width: 100%;
-          padding: 12px;
-          border: 1px solid #d7e0ea;
-          border-radius: 12px;
-          background: #fbfdff;
-          color: #0f2b46;
-          font-family: inherit;
-          font-size: 14px;
-        }
-        textarea {
-          min-height: 120px;
-          resize: vertical;
-        }
-        .options,
-        .chips {
-          display: flex;
-          flex-wrap: wrap;
-          gap: 8px;
-        }
-        .opt,
-        .chip {
-          border: 1px solid #d7e0ea;
-          background: #fff;
-          padding: 8px 12px;
-          border-radius: 999px;
-          font-size: 13px;
-          cursor: pointer;
-          transition: 0.15s transform, 0.15s box-shadow, 0.15s background, 0.15s color;
-        }
-        .opt.on {
-          background: #0f62fe;
-          color: #fff;
-          border-color: #0f62fe;
-          box-shadow: 0 4px 12px rgba(15, 98, 254, 0.25);
-        }
-        .chip.on {
-          background: #e7f0ff;
-          border-color: #a8c6ff;
-        }
-        .cta {
-          display: flex;
-          gap: 10px;
-          align-items: center;
-          margin-top: 14px;
-        }
-        .btn {
-          appearance: none;
-          border: none;
-          padding: 12px 16px;
-          border-radius: 12px;
-          background: #334155;
-          color: #fff;
-          font-weight: 700;
-          cursor: pointer;
-          transition: 0.15s transform, 0.15s box-shadow, 0.15s opacity;
-        }
-        .btn:hover {
-          transform: translateY(-1px);
-          box-shadow: 0 6px 18px rgba(17, 24, 39, 0.18);
-        }
-        .btn.primary {
-          background: #111827;
-        }
-        .hint {
-          font-size: 12px;
-          color: #5b7a99;
-        }
-        .answer {
-          margin-top: 14px;
-        }
-        .answerCard {
-          border-left: 4px solid #0f62fe;
-        }
-        h4 {
-          margin: 0 0 6px;
-          color: #0f2b46;
-          font-size: 16px;
-        }
-        pre {
-          margin: 0;
-          white-space: pre-wrap;
-          font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
-            "Liberation Mono", "Courier New", monospace;
-          background: #f8fbff;
-          border: 1px solid #e6ecf3;
-          border-radius: 12px;
-          padding: 12px;
-          font-size: 13px;
-          color: #0f2b46;
-        }
-      `}</style>
     </section>
   );
 }
-
