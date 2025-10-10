@@ -1,6 +1,8 @@
+/* eslint-disable react/no-unescaped-entities */
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import Header from "@/components/Header";
 
 /** Views */
 type View = "picker" | "scenario" | "task" | "complete";
@@ -24,7 +26,7 @@ export default function LessonPage() {
     3: null,
   });
 
-  // task state (unchanged behavior)
+  // task state
   const [checked, setChecked] = useState<Record<number, boolean>>({});
   const [showResult, setShowResult] = useState(false);
 
@@ -36,11 +38,11 @@ export default function LessonPage() {
       subtitle: string;
       situation: string;
       ask: string;
-      response: string[];     // base “AI’s Response”
-      chips: string[];        // chip labels shown
+      response: string[]; // base “AI’s Response”
+      chips: string[]; // chip labels shown
       protip: string;
 
-      // task bits (as in your original page)
+      // task bits
       taskGoal: string;
       taskOptions: string[];
       assembled: string;
@@ -231,19 +233,22 @@ export default function LessonPage() {
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900">
-      {/* Header */}
-      <header className="sticky top-0 z-10 border-b bg-white/80 backdrop-blur">
+      {/* Site header — same as main page */}
+      <Header current="lesson" />
+
+      {/* Subheader with back arrow to homepage + dynamic title */}
+      <div className="sticky top-[56px] z-10 border-b bg-white/80 backdrop-blur">
         <div className="mx-auto flex max-w-5xl items-center gap-3 px-4 py-3">
-          <button
-            onClick={() => setView("picker")}
-            className="grid h-9 w-9 place-items-center rounded-full bg-slate-100"
-            aria-label="Back"
+          <a
+            href="https://getaiready.app"
+            className="grid h-9 w-9 place-items-center rounded-full bg-slate-100 hover:bg-slate-200 transition"
+            aria-label="Back to homepage"
           >
             ←
-          </button>
+          </a>
           <h1 className="text-xl font-bold md:text-2xl">{title}</h1>
         </div>
-      </header>
+      </div>
 
       <main className="mx-auto max-w-5xl px-4 pb-24 pt-6">
         {/* PICKER */}
@@ -323,7 +328,6 @@ export default function LessonPage() {
               <b>Pro Tip —</b> {data.protip}
             </Section>
 
-            {/* Real button (as requested) */}
             <button className="btn-primary" onClick={openTask}>
               Try the Task
             </button>
