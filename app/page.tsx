@@ -20,7 +20,7 @@ export default function Page() {
             </h1>
 
             <p className="mt-4 text-lg text-slate-600">
-              Practical, role-based lessons. 9 tracks × 5 lessons × 3 scenarios.
+              Practical, role-based lessons. 9 tracks x 5 lessons x 3 scenarios.
               Built for busy professionals.
             </p>
 
@@ -56,43 +56,50 @@ export default function Page() {
 
         {/* FEATURES SECTION */}
         <section id="features" className="mx-auto max-w-6xl px-4 py-12">
-          <h2 className="text-2xl font-semibold">What you’ll master</h2>
+          <h2 className="text-2xl font-semibold">What you will master</h2>
 
           <div className="mt-6 grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {[
-              {
-                title: "Emails & Tone",
-                desc: "Get to inbox zero with smart replies and tone control.",
-              },
-              {
-                title: "Meetings → Action",
-                desc: "Capture decisions, assign owners, and follow up.",
-              },
-              {
-                title: "Executive Summaries",
-                desc: "Condense long docs into crisp briefings.",
-              },
-              {
-                title: "Data → Insights",
-                desc: "Turn spreadsheets into charts and KPI snapshots.",
-              },
-              {
-                title: "Marketing & Social",
-                desc: "From idea to multi-platform posts fast.",
-              },
-              {
-                title: "Research & Analysis",
-                desc: "Find sources, compare options, decide confidently.",
-              },
-            ].map((item) => (
-              <div
-                key={item.title}
-                className="rounded-2xl border bg-white p-5 shadow-sm"
-              >
-                <div className="text-sm font-semibold">{item.title}</div>
-                <div className="mt-1 text-slate-600 text-sm">{item.desc}</div>
+            <div className="rounded-2xl border bg-white p-5 shadow-sm">
+              <div className="text-sm font-semibold">Emails & Tone</div>
+              <div className="mt-1 text-slate-600 text-sm">
+                Get to inbox zero with smart replies and tone control.
               </div>
-            ))}
+            </div>
+
+            <div className="rounded-2xl border bg-white p-5 shadow-sm">
+              <div className="text-sm font-semibold">Meetings to Action</div>
+              <div className="mt-1 text-slate-600 text-sm">
+                Capture decisions, assign owners, and follow up.
+              </div>
+            </div>
+
+            <div className="rounded-2xl border bg-white p-5 shadow-sm">
+              <div className="text-sm font-semibold">Executive Summaries</div>
+              <div className="mt-1 text-slate-600 text-sm">
+                Condense long docs into crisp briefings.
+              </div>
+            </div>
+
+            <div className="rounded-2xl border bg-white p-5 shadow-sm">
+              <div className="text-sm font-semibold">Data to Insights</div>
+              <div className="mt-1 text-slate-600 text-sm">
+                Turn spreadsheets into charts and KPI snapshots.
+              </div>
+            </div>
+
+            <div className="rounded-2xl border bg-white p-5 shadow-sm">
+              <div className="text-sm font-semibold">Marketing & Social</div>
+              <div className="mt-1 text-slate-600 text-sm">
+                From idea to multi-platform posts fast.
+              </div>
+            </div>
+
+            <div className="rounded-2xl border bg-white p-5 shadow-sm">
+              <div className="text-sm font-semibold">Research & Analysis</div>
+              <div className="mt-1 text-slate-600 text-sm">
+                Find sources, compare options, decide confidently.
+              </div>
+            </div>
           </div>
         </section>
 
