@@ -3,6 +3,7 @@
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import Faq from "@/components/Faq";
+import AIReadyScenarioDemo from "@/components/AIReadyScenarioDemo";
 
 export default function Page() {
   return (
@@ -22,8 +23,7 @@ export default function Page() {
             </div>
           </div>
           <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm">
-            <div className="aspect-[16/10] rounded-xl bg-gradient-to-br from-slate-100 to-slate-200 grid place-items-center text-slate-500">
-              App screenshot placeholder
+             <AIReadyScenarioDemo />
             </div>
             <div className="mt-3 grid grid-cols-3 gap-3 text-xs text-center">
               <div className="rounded-xl bg-slate-50 border p-3">9 Tracks</div>
