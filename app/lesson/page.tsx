@@ -9,7 +9,6 @@ type View = "picker" | "scenario" | "task" | "complete";
 type ScenarioId = 1 | 2 | 3;
 
 export default function LessonPage() {
-  // keep page fully opaque (if you had any fades elsewhere)
   useEffect(() => {
     document.body.classList.add("lesson-force-opaque");
     return () => document.body.classList.remove("lesson-force-opaque");
@@ -17,15 +16,11 @@ export default function LessonPage() {
 
   const [view, setView] = useState<View>("picker");
   const [scenario, setScenario] = useState<ScenarioId>(1);
-
-  // one active chip per scenario (null means default)
   const [activeChip, setActiveChip] = useState<Record<ScenarioId, string | null>>({
     1: null,
     2: null,
     3: null,
   });
-
-  // task state
   const [checked, setChecked] = useState<Record<number, boolean>>({});
   const [showResult, setShowResult] = useState(false);
 
@@ -40,7 +35,6 @@ export default function LessonPage() {
       response: string[];
       chips: string[];
       protip: string;
-
       taskGoal: string;
       taskOptions: string[];
       assembled: string;
@@ -70,7 +64,6 @@ export default function LessonPage() {
         "Manager view (add stakeholder note)",
       ],
       protip: "Keep reflection prompts consistent but allow for personal interpretation.",
-
       taskGoal: "Create 5 daily reflection prompts for productivity and growth.",
       taskOptions: [
         "Include win/achievement prompt",
@@ -100,14 +93,8 @@ export default function LessonPage() {
         "Risks: …",
         "Next-Week Plan: 1) … (Owner, 90m) 2) … (Owner, 45m)",
       ],
-      chips: [
-        "Add metrics table",
-        "Reduce to one-pager",
-        "Executive tone",
-        "Include calendar blocks",
-      ],
+      chips: ["Add metrics table", "Reduce to one-pager", "Executive tone", "Include calendar blocks"],
       protip: "Convert “Next-Week Plan” into calendar holds immediately.",
-
       taskGoal:
         "Turn last week's notes into a Monday plan with Highlights, Metrics, Lessons, Risks, and a Next-Week Plan.",
       taskOptions: [
@@ -130,15 +117,8 @@ export default function LessonPage() {
       ask:
         "Act as a cognitive coach. Reframe the following stressful event using: Facts, Thoughts, Alternative View, One Next Step. Keep it supportive, professional, and under 120 words. Event: <describe>.",
       response: ["Facts: …", "Thoughts: …", "Alternative View: …", "One Next Step: …"],
-      chips: [
-        "Shorter (≤80 words)",
-        "More empathetic",
-        "Data-driven framing",
-        "Add checklist for tomorrow",
-      ],
-      protip:
-        "Name the feeling → write the fact → choose one step. That’s the reset.",
-
+      chips: ["Shorter (≤80 words)", "More empathetic", "Data-driven framing", "Add checklist for tomorrow"],
+      protip: "Name the feeling → write the fact → choose one step. That’s the reset.",
       taskGoal:
         "Reframe a stressful event into Facts, Thoughts, Alternative View, One Next Step (≤120 words).",
       taskOptions: [
@@ -155,47 +135,33 @@ export default function LessonPage() {
     },
   };
 
-  /** Adjusted AI Response preview */
+  /** Adjusted preview with chips */
   const previewResponse = useMemo(() => {
     const base = [...DATA[scenario].response];
     const chip = activeChip[scenario];
     if (!chip) return base;
 
     switch (scenario) {
-      case 1: {
+      case 1:
         if (chip === "Shorter (3 questions)") return base.slice(0, 3);
-        if (chip === "More reflective (add feeling check)")
-          return [...base, "How did I feel today (1–2 words)?"];
-        if (chip === "Action-biased (force next steps)")
-          return [...base, "What single action will I take tomorrow?"];
-        if (chip === "Manager view (add stakeholder note)")
-          return [...base, "Any stakeholder to update? What will I say?"];
-        return base;
-      }
-      case 2: {
-        if (chip === "Add metrics table")
-          return [...base, "Metrics Table: | Metric | Target | Actual |"];
-        if (chip === "Reduce to one-pager")
-          return [base[0], base[2], base[4]].filter(Boolean);
-        if (chip === "Executive tone")
-          return [...base, "Use concise, executive-ready wording."];
-        if (chip === "Include calendar blocks")
-          return [...base, "Block calendar time for each priority."];
-        return base;
-      }
-      case 3: {
+        if (chip === "More reflective (add feeling check)") return [...base, "How did I feel today (1–2 words)?"];
+        if (chip === "Action-biased (force next steps)") return [...base, "What single action will I take tomorrow?"];
+        if (chip === "Manager view (add stakeholder note)") return [...base, "Any stakeholder to update? What will I say?"];
+        break;
+      case 2:
+        if (chip === "Add metrics table") return [...base, "Metrics Table: | Metric | Target | Actual |"];
+        if (chip === "Reduce to one-pager") return [base[0], base[2], base[4]].filter(Boolean);
+        if (chip === "Executive tone") return [...base, "Use concise, executive-ready wording."];
+        if (chip === "Include calendar blocks") return [...base, "Block calendar time for each priority."];
+        break;
+      case 3:
         if (chip === "Shorter (≤80 words)") return base.slice(0, 3);
-        if (chip === "More empathetic")
-          return [...base, "Tone: empathetic and supportive."];
-        if (chip === "Data-driven framing")
-          return [...base, "Add one data point to support the view."];
-        if (chip === "Add checklist for tomorrow")
-          return [...base, "Checklist: [ ] task 1  [ ] task 2  [ ] task 3"];
-        return base;
-      }
-      default:
-        return base;
+        if (chip === "More empathetic") return [...base, "Tone: empathetic and supportive."];
+        if (chip === "Data-driven framing") return [...base, "Add one data point to support the view."];
+        if (chip === "Add checklist for tomorrow") return [...base, "Checklist: [ ] task 1  [ ] task 2  [ ] task 3"];
+        break;
     }
+    return base;
   }, [scenario, activeChip, DATA]);
 
   /** Handlers */
@@ -215,16 +181,14 @@ export default function LessonPage() {
   const checkAnswer = () => {
     if (Object.values(checked).every((v) => !v)) return;
     setShowResult(true);
-    setTimeout(() => {
-      document.getElementById("resultBlock")?.scrollIntoView({ behavior: "smooth" });
-    }, 0);
+    setTimeout(() => document.getElementById("resultBlock")?.scrollIntoView({ behavior: "smooth" }), 0);
   };
 
   const data = DATA[scenario];
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900">
-      {/* Main site header (logo + nav) */}
+      {/* Main header (logo + nav) */}
       <Header current="lesson" />
 
       <main className="mx-auto max-w-5xl px-4 pb-24 pt-6">
@@ -284,7 +248,7 @@ export default function LessonPage() {
                       onClick={() =>
                         setActiveChip((prev) => ({
                           ...prev,
-                          [scenario]: on ? null : label, // single-select toggle
+                          [scenario]: on ? null : label,
                         }))
                       }
                       aria-pressed={on}
@@ -305,9 +269,12 @@ export default function LessonPage() {
               <b>Pro Tip —</b> {data.protip}
             </Section>
 
-            {/* Centered primary action */}
+            {/* Primary action centered */}
             <div className="mt-6 flex justify-center">
-              <button onClick={openTask} className="btn-ai">
+              <button
+                onClick={openTask}
+                className="inline-flex items-center rounded-full bg-blue-600 px-6 py-3 text-white font-semibold shadow-sm hover:bg-blue-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+              >
                 Try the Task
               </button>
             </div>
@@ -347,13 +314,13 @@ export default function LessonPage() {
             {/* Actions */}
             <div className="flex flex-wrap items-center justify-center gap-3">
               <button
-                className="btn-ghost"
+                className="inline-flex items-center rounded-full border border-slate-300 px-6 py-3 font-semibold text-slate-800 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-300"
                 onClick={() => alert("Not finished yet — You skipped the task.")}
               >
                 Skip
               </button>
               <button
-                className="btn-ai disabled:opacity-50"
+                className="inline-flex items-center rounded-full bg-blue-600 px-6 py-3 text-white font-semibold shadow-sm hover:bg-blue-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 disabled:opacity-50"
                 disabled={Object.values(checked).every((v) => !v)}
                 onClick={checkAnswer}
               >
@@ -363,7 +330,7 @@ export default function LessonPage() {
 
             {showResult && (
               <div id="resultBlock" className="space-y-3">
-                <div className="ok-panel">
+                <div className="flex items-center gap-2 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-emerald-800">
                   <b>Correct!</b> Great job! You selected the right prompt pieces.
                 </div>
                 <Section>
@@ -377,7 +344,10 @@ export default function LessonPage() {
                 </Section>
 
                 <div className="mt-2 flex justify-center">
-                  <button className="btn-ai" onClick={() => setView("complete")}>
+                  <button
+                    className="inline-flex items-center rounded-full bg-blue-600 px-6 py-3 text-white font-semibold shadow-sm hover:bg-blue-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+                    onClick={() => setView("complete")}
+                  >
                     Done
                   </button>
                 </div>
@@ -396,10 +366,16 @@ export default function LessonPage() {
               <b>Key Takeaway —</b> {data.takeaway}
             </Section>
             <div className="mt-3 grid gap-3 md:grid-cols-2">
-              <button className="btn-ghost" onClick={() => setView("picker")}>
+              <button
+                className="inline-flex items-center justify-center rounded-full border border-slate-300 px-6 py-3 font-semibold text-slate-800 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-300"
+                onClick={() => setView("picker")}
+              >
                 Back to Tracks
               </button>
-              <button className="btn-ai" onClick={() => setView("picker")}>
+              <button
+                className="inline-flex items-center justify-center rounded-full bg-blue-600 px-6 py-3 text-white font-semibold shadow-sm hover:bg-blue-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+                onClick={() => setView("picker")}
+              >
                 Another Scenario
               </button>
             </div>
@@ -407,38 +383,18 @@ export default function LessonPage() {
         )}
       </main>
 
-      {/* Utility styles (Tailwind) */}
+      {/* Keep only truly global bits here (no Tailwind @apply) */}
       <style jsx global>{`
         body.lesson-force-opaque,
         body.lesson-force-opaque * {
           opacity: 1 !important;
-        }
-        /* Primary AI Ready button */
-        .btn-ai {
-          @apply rounded-full bg-blue-600 px-6 py-3 font-semibold text-white shadow-md hover:bg-blue-700 transition;
-        }
-        /* Secondary/ghost button */
-        .btn-ghost {
-          @apply rounded-full border-2 border-slate-300 px-6 py-3 font-semibold text-slate-800 hover:bg-slate-50 transition;
-        }
-        .ok-panel {
-          @apply flex items-center gap-2 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-emerald-800;
-        }
-        .section {
-          @apply rounded-2xl border p-4 md:p-5;
-        }
-        .section-default {
-          @apply bg-slate-50 border-slate-200;
-        }
-        .section-banner {
-          @apply bg-purple-100/70 border-purple-200;
         }
       `}</style>
     </div>
   );
 }
 
-/** Reusable section block */
+/** Reusable section */
 function Section({
   title,
   tone = "default",
@@ -449,7 +405,11 @@ function Section({
   children: React.ReactNode;
 }) {
   return (
-    <div className={`section ${tone === "banner" ? "section-banner" : "section-default"}`}>
+    <div
+      className={`rounded-2xl border p-4 md:p-5 ${
+        tone === "banner" ? "bg-purple-100/70 border-purple-200" : "bg-slate-50 border-slate-200"
+      }`}
+    >
       {title ? <h3 className="mb-2 text-xl font-semibold">{title}</h3> : null}
       {children}
     </div>
