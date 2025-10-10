@@ -1,5 +1,3 @@
-
-
 /* eslint-disable react/no-unescaped-entities */
 "use client";
 
@@ -19,8 +17,7 @@ const cls = {
   chipRow: "mt-3 flex flex-wrap gap-2",
   chip:
     "inline-flex items-center rounded-full border border-slate-200 bg-white px-3 py-1.5 text-[12px] font-medium text-slate-700 hover:bg-slate-50 transition select-none",
-  chipOn:
-    "border-blue-300 bg-blue-50 text-blue-800",
+  chipOn: "border-blue-300 bg-blue-50 text-blue-800",
   proTipLabel: "font-semibold text-slate-800",
   proTip: "mt-2 text-[14px] text-slate-700",
   card: "rounded-2xl border border-slate-200 bg-white p-4 sm:p-5 shadow-sm",
@@ -40,13 +37,13 @@ export default function AIReadyScenarioDemo() {
 
   return (
     <section aria-label="Weekly Review Scenario" className={cls.wrap}>
-      {/* optional tags row (keeps parity with other scenarios) */}
-      <div className="flex flex-wrap items-center gap-2">
-        <span className={cls.tag}>Scenario</span>
-        <span className={cls.tag}>Template</span>
+      {/* ==== TOP: replaced bubbles + old title with new heading & subheading ==== */}
+      <div>
+        <h1 className={cls.h1}>Inside an AI Ready Lesson</h1>
+        <p className={cls.p}>
+          Every scenario is a short, practical exercise powered by AI.
+        </p>
       </div>
-
-      <h1 className={cls.h1}>Weekly Review Template</h1>
 
       <div className={cls.card}>
         {/* Situation */}
@@ -58,9 +55,10 @@ export default function AIReadyScenarioDemo() {
         {/* What to ask AI */}
         <h2 className={cls.h2}>What to Ask AI</h2>
         <p className={cls.p}>
-          Summarize my week from the notes below and create a Monday action plan. Use sections:
-          <em> Highlights, Metrics, Lessons, Risks, Next-Week Plan</em> (with owners &amp; time boxes).
-          Notes: &lt;paste bullets&gt;.
+          Summarize my week from the notes below and create a Monday action plan.
+          Use sections:
+          <em> Highlights, Metrics, Lessons, Risks, Next-Week Plan</em> (with
+          owners &amp; time boxes). Notes: &lt;paste bullets&gt;.
         </p>
 
         {/* AI's Response skeleton */}
@@ -101,8 +99,11 @@ export default function AIReadyScenarioDemo() {
         {/* Tiny helper note when a chip is selected */}
         {selected && (
           <p className="mt-2 text-[12px] text-blue-700">
-            Adjustment selected: <span className="font-medium">{ADJUST.find(a => a.id === selected)?.label}</span>.
-            In the full app this modifies the output format automatically.
+            Adjustment selected:{" "}
+            <span className="font-medium">
+              {ADJUST.find((a) => a.id === selected)?.label}
+            </span>
+            . In the full app this modifies the output format automatically.
           </p>
         )}
       </div>
