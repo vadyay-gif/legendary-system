@@ -10,18 +10,16 @@ export default function Page() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white text-slate-900">
       <Header current="home" />
-
       <main>
-        {/* HERO */}
+        {/* HERO SECTION (original heading restored) */}
         <section className="mx-auto max-w-6xl px-4 py-16 grid md:grid-cols-2 gap-8 items-center">
           <div>
             <h1 className="text-4xl md:text-5xl font-bold tracking-tight">
-              Inside an AI Ready Lesson
+              Learn to use AI at work in minutes a day
             </h1>
             <p className="mt-4 text-lg text-slate-600">
-              Every scenario is a short, practical exercise powered by AI.
+              Practical, role-based lessons. 9 tracks × 5 lessons × 3 scenarios. Built for busy professionals.
             </p>
-
             <div className="mt-6 flex flex-wrap gap-3">
               <a
                 href="/funnel"
@@ -38,17 +36,32 @@ export default function Page() {
             </div>
           </div>
 
-          {/* Scenario demo preview box */}
-          <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm">
-            <AIReadyScenarioDemo />
+          {/* STATS BOX */}
+          <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm text-center">
+            <div className="grid grid-cols-3 gap-3 text-center">
+              <div className="rounded-xl bg-slate-50 border p-3">9 Tracks</div>
+              <div className="rounded-xl bg-slate-50 border p-3">135 Scenarios</div>
+              <div className="rounded-xl bg-slate-50 border p-3">Daily Tips</div>
+            </div>
           </div>
         </section>
 
-        {/* STATS */}
-        <section className="mt-3 grid grid-cols-3 gap-3 text-center px-4 max-w-6xl mx-auto">
-          <div className="rounded-xl bg-slate-50 border p-3">9 Tracks</div>
-          <div className="rounded-xl bg-slate-50 border p-3">135 Scenarios</div>
-          <div className="rounded-xl bg-slate-50 border p-3">Daily Tips</div>
+        {/* LESSON DEMO SECTION (new heading placed above demo) */}
+        <section className="mx-auto max-w-6xl px-4 py-16 grid md:grid-cols-2 gap-8 items-start">
+          {/* NEW HEADING for the lesson area */}
+          <div>
+            <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-slate-900">
+              Inside an AI Ready Lesson
+            </h2>
+            <p className="mt-4 text-lg text-slate-600">
+              Every scenario is a short, practical exercise powered by AI.
+            </p>
+          </div>
+
+          {/* Scenario Demo Component */}
+          <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm">
+            <AIReadyScenarioDemo />
+          </div>
         </section>
 
         {/* FEATURES */}
@@ -56,7 +69,6 @@ export default function Page() {
           <h2 className="text-2xl font-semibold mb-8 text-center">
             What you&apos;ll master
           </h2>
-
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {[
               {
@@ -114,7 +126,6 @@ export default function Page() {
           </div>
         </section>
       </main>
-
       <Footer />
     </div>
   );
