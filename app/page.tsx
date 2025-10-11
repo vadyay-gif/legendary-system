@@ -111,7 +111,7 @@ export default function Page() {
             />
             <Faq
               q="How much will it cost?"
-              a="MVP will start with a small monthly subscription, with a free trial for early adopters."
+              a="The AI Ready app is completely free for early adopters."
             />
           </div>
         </section>
