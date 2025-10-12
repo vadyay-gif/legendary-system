@@ -1,11 +1,11 @@
 /* eslint-disable react/no-unescaped-entities */
 "use client";
 
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 
 /**
- * Weekly Review Template — read-only scenario layout
- * Matches the app's sections/typography/chips shown in your screenshot.
+ * Weekly Review Template — interactive version
+ * Keeps your structure/classes; only adds state to update AI's Response.
  */
 
 const cls = {
@@ -24,7 +24,7 @@ const cls = {
   tag: "inline-flex items-center rounded-full border border-slate-200 bg-white px-2.5 py-1 text-[11px] font-medium text-slate-700 shadow-sm",
 };
 
-type Chip = { id: string; label: string };
+type Chip = { id: "metrics" | "onepager" | "exec" | "calendar"; label: string };
 const ADJUST: Chip[] = [
   { id: "metrics", label: "Add metrics table" },
   { id: "onepager", label: "Reduce to one-pager" },
@@ -32,17 +32,69 @@ const ADJUST: Chip[] = [
   { id: "calendar", label: "Include calendar blocks" },
 ];
 
+type ResponseShape = {
+  highlights: string;
+  metrics: string;
+  lessons: string;
+  risks: string;
+  nextWeek: string;
+};
+
+const BASE: ResponseShape = {
+  highlights: "Team completed onboarding for 3 new users.",
+  metrics: "Traffic up 12%, conversion stable at 4.3%.",
+  lessons: "Async review saves ~2h per week.",
+  risks: "Dependency on API reliability.",
+  nextWeek: "1) Update dashboard (Owner, 90m)  2) Write help docs (Owner, 45m)",
+};
+
 export default function AIReadyScenarioDemo() {
-  const [selected, setSelected] = useState<string | null>(null);
+  const [selected, setSelected] = useState<Chip["id"] | null>(null);
+
+  // Variations applied by each chip (single-select)
+  const applied: ResponseShape = useMemo(() => {
+    if (selected === "metrics") {
+      return {
+        ...BASE,
+        metrics:
+          "Traffic ▲12%, Conversion 4.3%, Churn 2.1% (▼0.4%), ARPU $7.10 (▲$0.30).",
+      };
+    }
+    if (selected === "onepager") {
+      return {
+        ...BASE,
+        highlights: "Onboarding done; +12% traffic.",
+        lessons: "Async review saves 2h/wk; watch API.",
+        nextWeek: "Dashboard + help docs (owners/timeboxes).",
+      };
+    }
+    if (selected === "exec") {
+      return {
+        ...BASE,
+        highlights:
+          "Material progress across onboarding and growth KPIs; trajectory positive.",
+        lessons:
+          "Process optimization delivered measurable efficiency gains (≈2h/wk).",
+        risks:
+          "API dependency is a single point of failure; recommend proactive monitoring & SLA review.",
+      };
+    }
+    if (selected === "calendar") {
+      return {
+        ...BASE,
+        nextWeek:
+          "Scheduled holds: Dashboard — Mon 10:00–11:30; Help docs — Wed 14:00–14:45 (owners confirmed).",
+      };
+    }
+    return BASE;
+  }, [selected]);
 
   return (
     <section aria-label="Weekly Review Scenario" className={cls.wrap}>
-      {/* ==== TOP: replaced bubbles + old title with new heading & subheading ==== */}
+      {/* Heading */}
       <div>
         <h1 className={cls.h1}>Inside an AI Ready Lesson</h1>
-        <p className={cls.p}>
-          Every scenario is a short, practical exercise powered by AI.
-        </p>
+        <p className={cls.p}>Every scenario is a short, practical exercise powered by AI.</p>
       </div>
 
       <div className={cls.card}>
@@ -52,23 +104,22 @@ export default function AIReadyScenarioDemo() {
           You need a 10-minute weekly review that turns notes into a Monday plan.
         </p>
 
-        {/* What to ask AI */}
+        {/* What to Ask AI */}
         <h2 className={cls.h2}>What to Ask AI</h2>
         <p className={cls.p}>
           Summarize my week from the notes below and create a Monday action plan.
-          Use sections:
-          <em> Highlights, Metrics, Lessons, Risks, Next-Week Plan</em> (with
+          Use sections: <em>Highlights, Metrics, Lessons, Risks, Next-Week Plan</em> (with
           owners &amp; time boxes). Notes: &lt;paste bullets&gt;.
         </p>
 
-        {/* AI's Response skeleton */}
+        {/* AI's Response (dynamic) */}
         <h2 className={cls.h2}>AI's Response</h2>
         <ul className={cls.bullets}>
-          <li>Highlights: …</li>
-          <li>Metrics: …</li>
-          <li>Lessons: …</li>
-          <li>Risks: …</li>
-          <li>Next-Week Plan: 1) … (Owner, 90m) 2) … (Owner, 45m)</li>
+          <li>Highlights: {applied.highlights}</li>
+          <li>Metrics: {applied.metrics}</li>
+          <li>Lessons: {applied.lessons}</li>
+          <li>Risks: {applied.risks}</li>
+          <li>Next-Week Plan: {applied.nextWeek}</li>
         </ul>
 
         {/* Adjust the Result */}
@@ -90,22 +141,12 @@ export default function AIReadyScenarioDemo() {
           })}
         </div>
 
-        {/* Pro Tip */}
+        {/* Pro Tip (kept) */}
         <p className={cls.proTip}>
           <span className={cls.proTipLabel}>Pro Tip —</span>{" "}
           Convert “Next-Week Plan” into calendar holds immediately.
         </p>
-
-        {/* Tiny helper note when a chip is selected */}
-        {selected && (
-          <p className="mt-2 text-[12px] text-blue-700">
-            Adjustment selected:{" "}
-            <span className="font-medium">
-              {ADJUST.find((a) => a.id === selected)?.label}
-            </span>
-            . In the full app this modifies the output format automatically.
-          </p>
-        )}
+        {/* (Blue helper text removed as requested) */}
       </div>
     </section>
   );
