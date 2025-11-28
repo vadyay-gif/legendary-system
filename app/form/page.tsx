@@ -4,15 +4,20 @@ import { useState } from "react";
 
 type Multi = string[];
 
-const TOTAL_STEPS = 12;
+const TOTAL_QUESTIONS = 20;
+const INTRO_STEP = 1;
+const FIRST_QUESTION_STEP = 2;
+const LAST_QUESTION_STEP = TOTAL_QUESTIONS + 1; // 21
+const EMAIL_STEP = TOTAL_QUESTIONS + 2; // 22
+const TOTAL_STEPS = EMAIL_STEP;
 
 export default function FormPage() {
-  const [step, setStep] = useState(1);
+  const [step, setStep] = useState<number>(INTRO_STEP);
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // All answers here
+  // All answers
   const [answers, setAnswers] = useState({
     q1_confidence: "",
     q2_awareness: "",
@@ -25,10 +30,31 @@ export default function FormPage() {
     q9_length: "",
     q10_motivation: "",
     q11_tips: "",
+    q12_frequency: "",
+    q13_device: "",
+    q14_language: "",
+    q15_region: "",
+    q16_companySize: "",
+    q17_policy: "",
+    q18_notificationChannel: "",
+    q19_timeframe: "",
+    q20_willingToPay: "",
     email: "",
   });
 
-  const progress = Math.round((step / TOTAL_STEPS) * 100);
+  // Question number for steps 2–21 (1–20), else 0
+  const questionNumber =
+    step >= FIRST_QUESTION_STEP && step <= LAST_QUESTION_STEP
+      ? step - 1
+      : 0;
+
+  let progress = 0;
+  if (questionNumber > 0) {
+    progress = questionNumber * 5; // 20 questions -> 5% each
+  }
+  if (step === EMAIL_STEP) {
+    progress = 100;
+  }
 
   function updateSingle(name: keyof typeof answers, value: string) {
     setAnswers((prev) => ({ ...prev, [name]: value }));
@@ -47,42 +73,75 @@ export default function FormPage() {
     setError(null);
   }
 
+  function setErr(msg: string): false {
+    setError(msg);
+    return false;
+  }
+
   function validateStep(s: number): boolean {
     setError(null);
 
-    if (s === 1 && !answers.q1_confidence) return setErr("Please select an option.");
-    if (s === 2 && !answers.q2_awareness) return setErr("Please select an option.");
-    if (s === 3) {
-      if (answers.q3_tasks.length === 0) return setErr("Select at least one task.");
-      if (answers.q3_tasks.length > 3) return setErr("Please select no more than 3 tasks.");
+    // Intro has no inputs
+    if (s === INTRO_STEP) return true;
+
+    if (s === 2 && !answers.q1_confidence)
+      return setErr("Please select an option.");
+    if (s === 3 && !answers.q2_awareness)
+      return setErr("Please select an option.");
+    if (s === 4) {
+      if (answers.q3_tasks.length === 0)
+        return setErr("Select at least one task.");
+      if (answers.q3_tasks.length > 3)
+        return setErr("Please select no more than 3 tasks.");
     }
-    if (s === 4 && answers.q4_challenges.length === 0)
+    if (s === 5 && answers.q4_challenges.length === 0)
       return setErr("Select at least one challenge.");
-    if (s === 5 && !answers.q5_experience) return setErr("Please select an option.");
-    if (s === 6 && answers.q6_use.length === 0)
+    if (s === 6 && !answers.q5_experience)
+      return setErr("Please select an option.");
+    if (s === 7 && answers.q6_use.length === 0)
       return setErr("Select at least one option.");
-    if (s === 7 && !answers.q7_role) return setErr("Please select an option.");
-    if (s === 8) {
+    if (s === 8 && !answers.q7_role)
+      return setErr("Please select an option.");
+    if (s === 9) {
       if (answers.q8_format.length === 0)
         return setErr("Select at least one format.");
       if (answers.q8_format.length > 2)
         return setErr("Please select no more than 2 formats.");
     }
-    if (s === 9 && !answers.q9_length) return setErr("Please select an option.");
-    if (s === 10 && !answers.q10_motivation) return setErr("Please select an option.");
-    if (s === 11 && !answers.q11_tips) return setErr("Please select an option.");
-    if (s === 12) {
+    if (s === 10 && !answers.q9_length)
+      return setErr("Please select an option.");
+    if (s === 11 && !answers.q10_motivation)
+      return setErr("Please select an option.");
+    if (s === 12 && !answers.q11_tips)
+      return setErr("Please select an option.");
+
+    if (s === 13 && !answers.q12_frequency)
+      return setErr("Please select an option.");
+    if (s === 14 && !answers.q13_device)
+      return setErr("Please select an option.");
+    if (s === 15 && !answers.q14_language)
+      return setErr("Please select an option.");
+    if (s === 16 && !answers.q15_region)
+      return setErr("Please select an option.");
+    if (s === 17 && !answers.q16_companySize)
+      return setErr("Please select an option.");
+    if (s === 18 && !answers.q17_policy)
+      return setErr("Please select an option.");
+    if (s === 19 && !answers.q18_notificationChannel)
+      return setErr("Please select an option.");
+    if (s === 20 && !answers.q19_timeframe)
+      return setErr("Please select an option.");
+    if (s === 21 && !answers.q20_willingToPay)
+      return setErr("Please select an option.");
+
+    if (s === EMAIL_STEP) {
       const email = answers.email.trim();
-      const ok = !!email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+      const ok =
+        !!email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
       if (!ok) return setErr("Please enter a valid email.");
     }
 
     return true;
-  }
-
-  function setErr(msg: string): false {
-    setError(msg);
-    return false;
   }
 
   function next() {
@@ -91,7 +150,7 @@ export default function FormPage() {
   }
 
   function back() {
-    if (step > 1) {
+    if (step > INTRO_STEP) {
       setError(null);
       setStep((s) => s - 1);
     }
@@ -105,10 +164,7 @@ export default function FormPage() {
       setSubmitting(true);
       setError(null);
 
-      // 👉 OPTION A: simple console log (dev only)
-      // console.log("Form answers:", answers);
-
-      // 👉 OPTION B: POST to an API route (see step 3 below)
+      // POST to API route
       const res = await fetch("/api/form", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -133,13 +189,20 @@ export default function FormPage() {
           </p>
           <h1 className="text-2xl font-semibold mb-3">Thank you!</h1>
           <p className="text-sm text-slate-300">
-            Your answers will help us tailor the AI Ready experience and lessons
-            for professionals like you.
+            Your answers will help us tailor AI Ready – and we’ll send your AI
+            starter PDF to your inbox shortly.
           </p>
         </div>
       </main>
     );
   }
+
+  const label =
+    step === INTRO_STEP
+      ? "Intro"
+      : step >= FIRST_QUESTION_STEP && step <= LAST_QUESTION_STEP
+      ? `Question ${questionNumber} of ${TOTAL_QUESTIONS}`
+      : "Final step";
 
   return (
     <main className="min-h-screen bg-slate-950 flex items-center justify-center px-4">
@@ -169,19 +232,46 @@ export default function FormPage() {
           </div>
           <div className="flex justify-between text-[11px] text-slate-400 mt-1">
             <span>
-              <span className="font-semibold text-slate-100">{progress}%</span>{" "}
+              <span className="font-semibold text-slate-100">
+                {progress}%
+              </span>{" "}
               complete
             </span>
-            <span>
-              Question {step} of {TOTAL_STEPS}
-            </span>
+            <span>{label}</span>
           </div>
         </div>
 
         <form onSubmit={handleSubmit} className="mt-4">
-          {/* QUESTION BLOCKS */}
+          {/* STEP CONTENT */}
           <div className="space-y-2 mb-4">
-            {step === 1 && (
+            {/* Intro / welcome */}
+            {step === INTRO_STEP && (
+              <>
+                <p className="text-base md:text-lg font-medium">
+                  Welcome to AI Ready.
+                </p>
+                <p className="text-sm text-slate-300 mt-2">
+                  This short questionnaire helps us understand how you currently
+                  use (or don’t use) AI at work – so we can tailor lessons,
+                  examples, and templates to people like you.
+                </p>
+                <p className="text-sm text-slate-300 mt-2">
+                  It takes about 3–4 minutes. At the end, you’ll get a{" "}
+                  <span className="font-semibold">
+                    free PDF guide: “10 Practical Ways to Use AI at Work
+                    Today”
+                  </span>{" "}
+                  based on your answers.
+                </p>
+                <p className="text-xs text-slate-500 mt-3">
+                  Click “Next” to begin. There are 20 quick questions – no AI
+                  knowledge required.
+                </p>
+              </>
+            )}
+
+            {/* Q1 – step 2 */}
+            {step === 2 && (
               <>
                 <p className="text-base md:text-lg font-medium">
                   How confident do you feel using AI tools for your work?
@@ -200,7 +290,8 @@ export default function FormPage() {
               </>
             )}
 
-            {step === 2 && (
+            {/* Q2 – step 3 */}
+            {step === 3 && (
               <>
                 <p className="text-base md:text-lg font-medium">
                   Do you know what tasks AI can help you with at work?
@@ -218,7 +309,8 @@ export default function FormPage() {
               </>
             )}
 
-            {step === 3 && (
+            {/* Q3 – step 4 */}
+            {step === 4 && (
               <>
                 <p className="text-base md:text-lg font-medium">
                   What would you most like AI to help you with?
@@ -241,7 +333,8 @@ export default function FormPage() {
               </>
             )}
 
-            {step === 4 && (
+            {/* Q4 – step 5 */}
+            {step === 5 && (
               <>
                 <p className="text-base md:text-lg font-medium">
                   What’s your biggest challenge when trying to use AI?
@@ -266,7 +359,8 @@ export default function FormPage() {
               </>
             )}
 
-            {step === 5 && (
+            {/* Q5 – step 6 */}
+            {step === 6 && (
               <>
                 <p className="text-base md:text-lg font-medium">
                   What best describes your current AI experience level?
@@ -285,7 +379,8 @@ export default function FormPage() {
               </>
             )}
 
-            {step === 6 && (
+            {/* Q6 – step 7 */}
+            {step === 7 && (
               <>
                 <p className="text-base md:text-lg font-medium">
                   What do you currently use AI for?
@@ -309,7 +404,8 @@ export default function FormPage() {
               </>
             )}
 
-            {step === 7 && (
+            {/* Q7 – step 8 */}
+            {step === 8 && (
               <>
                 <p className="text-base md:text-lg font-medium">
                   What’s your job role or field?
@@ -332,7 +428,8 @@ export default function FormPage() {
               </>
             )}
 
-            {step === 8 && (
+            {/* Q8 – step 9 */}
+            {step === 9 && (
               <>
                 <p className="text-base md:text-lg font-medium">
                   What type of AI learning format works best for you?
@@ -353,7 +450,8 @@ export default function FormPage() {
               </>
             )}
 
-            {step === 9 && (
+            {/* Q9 – step 10 */}
+            {step === 10 && (
               <>
                 <p className="text-base md:text-lg font-medium">
                   How long should an AI lesson be for you to actually complete
@@ -372,7 +470,8 @@ export default function FormPage() {
               </>
             )}
 
-            {step === 10 && (
+            {/* Q10 – step 11 */}
+            {step === 11 && (
               <>
                 <p className="text-base md:text-lg font-medium">
                   What motivates you the most to improve your AI skills?
@@ -392,7 +491,8 @@ export default function FormPage() {
               </>
             )}
 
-            {step === 11 && (
+            {/* Q11 – step 12 */}
+            {step === 12 && (
               <>
                 <p className="text-base md:text-lg font-medium">
                   Would you like to receive AI tips or templates tailored to your
@@ -411,14 +511,198 @@ export default function FormPage() {
               </>
             )}
 
-            {step === 12 && (
+            {/* Q12 – step 13 */}
+            {step === 13 && (
               <>
                 <p className="text-base md:text-lg font-medium">
-                  Get your personalized AI Ready experience.
+                  How often do you currently use AI in a typical week?
+                </p>
+                <RadioGroup
+                  value={answers.q12_frequency}
+                  onChange={(v) => updateSingle("q12_frequency", v)}
+                  options={[
+                    "Never",
+                    "1–2 times",
+                    "3–5 times",
+                    "Daily",
+                    "Multiple times per day",
+                  ]}
+                />
+              </>
+            )}
+
+            {/* Q13 – step 14 */}
+            {step === 14 && (
+              <>
+                <p className="text-base md:text-lg font-medium">
+                  Where do you mostly access AI tools from?
+                </p>
+                <RadioGroup
+                  value={answers.q13_device}
+                  onChange={(v) => updateSingle("q13_device", v)}
+                  options={[
+                    "Desktop / laptop at work",
+                    "Desktop / laptop at home",
+                    "Mobile phone",
+                    "Tablet",
+                    "Mixed equally",
+                  ]}
+                />
+              </>
+            )}
+
+            {/* Q14 – step 15 */}
+            {step === 15 && (
+              <>
+                <p className="text-base md:text-lg font-medium">
+                  Which language would you prefer for AI Ready content?
+                </p>
+                <RadioGroup
+                  value={answers.q14_language}
+                  onChange={(v) => updateSingle("q14_language", v)}
+                  options={[
+                    "English only",
+                    "Arabic only",
+                    "English first, Arabic optional",
+                    "Arabic first, English optional",
+                    "Other",
+                  ]}
+                />
+              </>
+            )}
+
+            {/* Q15 – step 16 */}
+            {step === 16 && (
+              <>
+                <p className="text-base md:text-lg font-medium">
+                  Where are you primarily based?
+                </p>
+                <RadioGroup
+                  value={answers.q15_region}
+                  onChange={(v) => updateSingle("q15_region", v)}
+                  options={[
+                    "UAE / GCC",
+                    "Middle East / North Africa (non-GCC)",
+                    "Europe",
+                    "North America",
+                    "Asia-Pacific",
+                    "Other",
+                  ]}
+                />
+              </>
+            )}
+
+            {/* Q16 – step 17 */}
+            {step === 17 && (
+              <>
+                <p className="text-base md:text-lg font-medium">
+                  Approximately how large is your company or organization?
+                </p>
+                <RadioGroup
+                  value={answers.q16_companySize}
+                  onChange={(v) => updateSingle("q16_companySize", v)}
+                  options={[
+                    "Just me",
+                    "2–10 people",
+                    "11–50 people",
+                    "51–250 people",
+                    "250+ people",
+                  ]}
+                />
+              </>
+            )}
+
+            {/* Q17 – step 18 */}
+            {step === 18 && (
+              <>
+                <p className="text-base md:text-lg font-medium">
+                  Does your company have any restrictions on using AI tools?
+                </p>
+                <RadioGroup
+                  value={answers.q17_policy}
+                  onChange={(v) => updateSingle("q17_policy", v)}
+                  options={[
+                    "No restrictions that I know of",
+                    "Some guidelines but generally allowed",
+                    "Strictly controlled / approval needed",
+                    "Not allowed at all",
+                    "I’m not sure",
+                  ]}
+                />
+              </>
+            )}
+
+            {/* Q18 – step 19 */}
+            {step === 19 && (
+              <>
+                <p className="text-base md:text-lg font-medium">
+                  How would you prefer to receive AI Ready tips and updates?
+                </p>
+                <RadioGroup
+                  value={answers.q18_notificationChannel}
+                  onChange={(v) =>
+                    updateSingle("q18_notificationChannel", v)
+                  }
+                  options={[
+                    "Email",
+                    "In-app notifications",
+                    "WhatsApp / SMS",
+                    "I prefer not to receive tips",
+                  ]}
+                />
+              </>
+            )}
+
+            {/* Q19 – step 20 */}
+            {step === 20 && (
+              <>
+                <p className="text-base md:text-lg font-medium">
+                  How soon would you like to improve your AI skills for work?
+                </p>
+                <RadioGroup
+                  value={answers.q19_timeframe}
+                  onChange={(v) => updateSingle("q19_timeframe", v)}
+                  options={[
+                    "Immediately (this month)",
+                    "Within 3 months",
+                    "Within 6 months",
+                    "Sometime in the next year",
+                    "No clear timeline",
+                  ]}
+                />
+              </>
+            )}
+
+            {/* Q20 – step 21 */}
+            {step === 21 && (
+              <>
+                <p className="text-base md:text-lg font-medium">
+                  If AI Ready really helps you save time at work, how willing
+                  would you be to pay for it?
+                </p>
+                <RadioGroup
+                  value={answers.q20_willingToPay}
+                  onChange={(v) => updateSingle("q20_willingToPay", v)}
+                  options={[
+                    "I’d only use a free version",
+                    "I might pay a small amount (e.g. $5/month)",
+                    "I’d pay if it clearly saves me time",
+                    "I’d pay if my company covers it",
+                    "Not sure yet",
+                  ]}
+                />
+              </>
+            )}
+
+            {/* Email – step 22 */}
+            {step === EMAIL_STEP && (
+              <>
+                <p className="text-base md:text-lg font-medium">
+                  Final step – where should we send your AI PDF?
                 </p>
                 <p className="text-xs text-slate-400 mb-2">
-                  Leave your email to receive early access and tailored AI tips
-                  based on your answers.
+                  Leave your email to receive early access to AI Ready and your
+                  free PDF guide: “10 Practical Ways to Use AI at Work Today”.
                 </p>
                 <input
                   type="email"
@@ -444,7 +728,7 @@ export default function FormPage() {
             <button
               type="button"
               onClick={back}
-              disabled={step === 1}
+              disabled={step === INTRO_STEP}
               className="px-3 py-2 rounded-full border border-slate-700 text-xs md:text-sm text-slate-200 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-800 transition"
             >
               ← Back
@@ -476,7 +760,7 @@ export default function FormPage() {
   );
 }
 
-/* --- Small presentational components --- */
+/* --- Presentational components --- */
 
 function RadioGroup(props: {
   value: string;
