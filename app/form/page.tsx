@@ -1,20 +1,19 @@
 "use client";
 
+import Image from "next/image";
 import { useState } from "react";
 
-type Multi = string[];
+// Funnel structure:
+// Page 1  = intro (no % counter)
+// Page 2–11 = 10 questions (Q1 shows 0%)
+// Page 12 = email capture (shows 100%)
+// Thank-you page shows after submit (no % counter)
 
-// New funnel structure:
-// Slide 1 = intro
-// Slide 2–8 = 7 questions
-// Slide 9 = collect email
-// Slide 10 = thank you (after submit)
-
-const TOTAL_QUESTIONS = 7;
+const TOTAL_QUESTIONS = 10;
 const INTRO_STEP = 1;
 const FIRST_QUESTION_STEP = 2;
-const LAST_QUESTION_STEP = FIRST_QUESTION_STEP + TOTAL_QUESTIONS - 1; // 8
-const EMAIL_STEP = LAST_QUESTION_STEP + 1; // 9
+const LAST_QUESTION_STEP = FIRST_QUESTION_STEP + TOTAL_QUESTIONS - 1; // 11
+const EMAIL_STEP = LAST_QUESTION_STEP + 1; // 12
 const TOTAL_STEPS = EMAIL_STEP;
 
 export default function FormPage() {
@@ -23,32 +22,24 @@ export default function FormPage() {
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Answers (keep the same design/components, only change content + structure)
+  // 10 questions + email
   const [answers, setAnswers] = useState({
-    q1_feel: "",
-    q2_frustration: "",
-    q3_task: "",
-    q4_time: "",
-    q5_easier: "",
-    q6_worry: "",
-    q7_outcome: "",
+    q1_goal: "",
+    q2_feel: "",
+    q3_usecase: "",
+    q4_obstacle: "",
+    q5_output: "",
+    q6_office: "",
+    q7_length: "",
+    q8_format: "",
+    q9_age: "",
+    q10_start: "",
     email: "",
   });
 
-  // Question number for steps 2–8 (1–7), else 0
+  // Question number for steps 2–11 (1–10), else 0
   const questionNumber =
-    step >= FIRST_QUESTION_STEP && step <= LAST_QUESTION_STEP
-      ? step - 1
-      : 0;
-
-  // Progress: intro 0, each question equally, email 100
-  let progress = 0;
-  if (questionNumber > 0) {
-    progress = Math.round((questionNumber / TOTAL_QUESTIONS) * 100);
-  }
-  if (step === EMAIL_STEP) {
-    progress = 100;
-  }
+    step >= FIRST_QUESTION_STEP && step <= LAST_QUESTION_STEP ? step - 1 : 0;
 
   function updateSingle(name: keyof typeof answers, value: string) {
     setAnswers((prev) => ({ ...prev, [name]: value }));
@@ -63,20 +54,18 @@ export default function FormPage() {
   function validateStep(s: number): boolean {
     setError(null);
 
-    // Intro has no inputs
     if (s === INTRO_STEP) return true;
 
-    if (s === 2 && !answers.q1_feel) return setErr("Please select an option.");
-    if (s === 3 && !answers.q2_frustration)
-      return setErr("Please select an option.");
-    if (s === 4 && !answers.q3_task) return setErr("Please select an option.");
-    if (s === 5 && !answers.q4_time) return setErr("Please select an option.");
-    if (s === 6 && !answers.q5_easier)
-      return setErr("Please select an option.");
-    if (s === 7 && !answers.q6_worry)
-      return setErr("Please select an option.");
-    if (s === 8 && !answers.q7_outcome)
-      return setErr("Please select an option.");
+    if (s === 2 && !answers.q1_goal) return setErr("Please select an option.");
+    if (s === 3 && !answers.q2_feel) return setErr("Please select an option.");
+    if (s === 4 && !answers.q3_usecase) return setErr("Please select an option.");
+    if (s === 5 && !answers.q4_obstacle) return setErr("Please select an option.");
+    if (s === 6 && !answers.q5_output) return setErr("Please select an option.");
+    if (s === 7 && !answers.q6_office) return setErr("Please select an option.");
+    if (s === 8 && !answers.q7_length) return setErr("Please select an option.");
+    if (s === 9 && !answers.q8_format) return setErr("Please select an option.");
+    if (s === 10 && !answers.q9_age) return setErr("Please select an option.");
+    if (s === 11 && !answers.q10_start) return setErr("Please select an option.");
 
     if (s === EMAIL_STEP) {
       const email = answers.email.trim();
@@ -107,7 +96,6 @@ export default function FormPage() {
       setSubmitting(true);
       setError(null);
 
-      // Keep your existing API route
       const res = await fetch("/api/form", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -119,13 +107,14 @@ export default function FormPage() {
 
       if (!res.ok) throw new Error("Request failed");
       setSubmitted(true);
-    } catch (err) {
+    } catch {
       setError("Something went wrong. Please try again.");
     } finally {
       setSubmitting(false);
     }
   }
 
+  // Thank you page (no progress/counter)
   if (submitted) {
     return (
       <main className="min-h-screen bg-slate-950 flex items-center justify-center px-4">
@@ -135,20 +124,31 @@ export default function FormPage() {
           </p>
           <h1 className="text-2xl font-semibold mb-3">Thank you!</h1>
           <p className="text-sm text-slate-300">
-            You’re on the early access list. The link to the app will be emailed
-            to you shortly.
+            The link to AI Ready app will be sent to you shortly.
           </p>
         </div>
       </main>
     );
   }
 
+  // Progress logic:
+  // - No counter on intro (step 1)
+  // - Q1 (step 2) shows 0%
+  // - Email step shows 100%
+  const showProgress = step !== INTRO_STEP;
+  const progress =
+    step === EMAIL_STEP
+      ? 100
+      : step >= FIRST_QUESTION_STEP && step <= LAST_QUESTION_STEP
+      ? Math.round(((questionNumber - 1) / TOTAL_QUESTIONS) * 100) // Q1 => 0%
+      : 0;
+
   const label =
     step === INTRO_STEP
-      ? "Intro"
+      ? ""
       : step >= FIRST_QUESTION_STEP && step <= LAST_QUESTION_STEP
       ? `Question ${questionNumber} of ${TOTAL_QUESTIONS}`
-      : "Final step";
+      : "Email";
 
   return (
     <main className="min-h-screen bg-slate-950 flex items-center justify-center px-4">
@@ -160,47 +160,58 @@ export default function FormPage() {
               AI Ready
             </p>
             <h1 className="text-xl md:text-2xl font-semibold mt-1">
-              {step === INTRO_STEP
-                ? "Most professionals are using AI wrong"
-                : "Quick AI readiness quiz"}
+              {step === INTRO_STEP ? "AI feels risky… until it doesn’t." : "Quick AI Ready quiz"}
             </h1>
             <p className="text-xs md:text-sm text-slate-400 mt-1">
               {step === INTRO_STEP
-                ? "Take this 30-second quiz to see how ready you are to use AI at work."
+                ? "See how AI Ready helps you use AI safely for real work tasks."
                 : "Tap one answer per question."}
             </p>
           </div>
         </div>
 
-        {/* Progress (design unchanged) */}
-        <div className="mb-4">
-          <div className="h-2 w-full bg-slate-800 rounded-full overflow-hidden">
-            <div
-              className="h-full bg-indigo-500 transition-all"
-              style={{ width: `${progress}%` }}
-            />
+        {/* Progress (no counter on intro; no progress bar on intro) */}
+        {showProgress && (
+          <div className="mb-4">
+            <div className="h-2 w-full bg-slate-800 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-indigo-500 transition-all"
+                style={{ width: `${progress}%` }}
+              />
+            </div>
+            <div className="flex justify-between text-[11px] text-slate-400 mt-1">
+              <span>
+                <span className="font-semibold text-slate-100">{progress}%</span>{" "}
+                complete
+              </span>
+              <span>{label}</span>
+            </div>
           </div>
-          <div className="flex justify-between text-[11px] text-slate-400 mt-1">
-            <span>
-              <span className="font-semibold text-slate-100">{progress}%</span>{" "}
-              complete
-            </span>
-            <span>{label}</span>
-          </div>
-        </div>
+        )}
 
         <form onSubmit={handleSubmit} className="mt-4">
           {/* STEP CONTENT */}
           <div className="space-y-2 mb-4">
-            {/* Slide 1 – Intro */}
+            {/* Page 1 – Intro with image */}
             {step === INTRO_STEP && (
               <>
+                <div className="mb-4">
+                  <Image
+                    src="/ai-before-after.png"
+                    alt="Before and after using AI Ready"
+                    width={1400}
+                    height={700}
+                    priority
+                    className="w-full rounded-2xl border border-slate-800"
+                  />
+                </div>
+
                 <p className="text-base md:text-lg font-medium">
-                  Stop wasting time with “hit-or-miss” AI.
+                  Before: AI breaks things. After: AI Ready makes AI useful.
                 </p>
                 <p className="text-sm text-slate-300 mt-2">
-                  Answer 7 quick questions and we’ll tailor early access to AI
-                  Ready for how you work.
+                  Answer 10 quick questions so we can tailor AI Ready to how you work — emails,
+                  spreadsheets, presentations, summaries, and more.
                 </p>
                 <p className="text-xs text-slate-500 mt-3">
                   No signup yet. Tap “Next” to start.
@@ -208,150 +219,211 @@ export default function FormPage() {
               </>
             )}
 
-            {/* Slide 2 – Q1 */}
+            {/* Q1 – Outcome (AI Ready value) */}
             {step === 2 && (
               <>
                 <p className="text-base md:text-lg font-medium">
-                  How do you currently feel about AI at work?
+                  What would you most like AI Ready to help you improve first?
                 </p>
                 <RadioGroup
-                  value={answers.q1_feel}
-                  onChange={(v) => updateSingle("q1_feel", v)}
+                  value={answers.q1_goal}
+                  onChange={(v) => updateSingle("q1_goal", v)}
                   options={[
-                    "Curious but unsure where to start",
-                    "I’ve tried it — results are hit or miss",
-                    "I know it matters but rarely use it",
-                    "I avoid it because it feels overwhelming",
+                    "Write clearer emails and messages",
+                    "Summarize documents/meetings faster",
+                    "Create presentations and updates",
+                    "Work better with spreadsheets/data",
+                    "Plan and brainstorm more effectively",
                   ]}
                 />
               </>
             )}
 
-            {/* Slide 3 – Q2 */}
+            {/* Q2 – Confidence */}
             {step === 3 && (
               <>
                 <p className="text-base md:text-lg font-medium">
-                  What’s your biggest frustration with AI?
+                  How do you currently feel about using AI at work?
                 </p>
                 <RadioGroup
-                  value={answers.q2_frustration}
-                  onChange={(v) => updateSingle("q2_frustration", v)}
+                  value={answers.q2_feel}
+                  onChange={(v) => updateSingle("q2_feel", v)}
                   options={[
-                    "I don’t know what to ask",
-                    "The answers are inconsistent",
-                    "It feels too technical",
-                    "I don’t see how it fits my daily work",
+                    "Curious but unsure where to start",
+                    "I’ve tried it — results are hit or miss",
+                    "I use it sometimes but not confidently",
+                    "I avoid it because it feels risky",
                   ]}
                 />
               </>
             )}
 
-            {/* Slide 4 – Q3 */}
+            {/* Q3 – Primary use case */}
             {step === 4 && (
               <>
                 <p className="text-base md:text-lg font-medium">
-                  Which task would you most like AI to help with?
+                  Which work situation do you want AI Ready to train you for most?
                 </p>
                 <RadioGroup
-                  value={answers.q3_task}
-                  onChange={(v) => updateSingle("q3_task", v)}
+                  value={answers.q3_usecase}
+                  onChange={(v) => updateSingle("q3_usecase", v)}
                   options={[
-                    "Writing emails or messages",
-                    "Summarizing documents or meetings",
-                    "Planning, checklists, and organizing tasks",
-                    "Reports and updates",
+                    "Writing/replying to emails professionally",
+                    "Turning notes into a clear summary or report",
+                    "Building slides from bullet points",
+                    "Improving spreadsheets (formulas, cleanup, insights)",
+                    "Brainstorming ideas with structure",
                   ]}
                 />
               </>
             )}
 
-            {/* Slide 5 – Q4 */}
+            {/* Q4 – Biggest obstacle */}
             {step === 5 && (
               <>
                 <p className="text-base md:text-lg font-medium">
-                  How much time could you realistically spend learning AI?
+                  What’s the biggest thing that stops you getting reliable results from AI?
                 </p>
                 <RadioGroup
-                  value={answers.q4_time}
-                  onChange={(v) => updateSingle("q4_time", v)}
+                  value={answers.q4_obstacle}
+                  onChange={(v) => updateSingle("q4_obstacle", v)}
                   options={[
-                    "5 minutes at a time",
-                    "10–15 minutes",
-                    "Only when I really need it",
-                    "Almost none — I need quick wins",
+                    "I don’t know what to ask (prompting)",
+                    "The output sounds generic or wrong",
+                    "I worry about confidentiality/accuracy",
+                    "It takes too long to get a good result",
                   ]}
                 />
               </>
             )}
 
-            {/* Slide 6 – Q5 */}
+            {/* Q5 – Output preference */}
             {step === 6 && (
               <>
                 <p className="text-base md:text-lg font-medium">
-                  What would make AI easier for you to use?
+                  Which type of output would be most useful day-to-day?
                 </p>
                 <RadioGroup
-                  value={answers.q5_easier}
-                  onChange={(v) => updateSingle("q5_easier", v)}
+                  value={answers.q5_output}
+                  onChange={(v) => updateSingle("q5_output", v)}
                   options={[
-                    "Real examples from work",
-                    "Ready-to-copy prompts",
-                    "Step-by-step guidance",
-                    "Clear structure with no jargon",
+                    "Copy-paste email drafts",
+                    "Summaries and action lists",
+                    "Templates (prompts + examples)",
+                    "Slide outlines and speaker notes",
+                    "Spreadsheet steps (what to do and how)",
                   ]}
                 />
               </>
             )}
 
-            {/* Slide 7 – Q6 */}
+            {/* Q6 – Office tools focus */}
             {step === 7 && (
               <>
                 <p className="text-base md:text-lg font-medium">
-                  What worries you most about using AI at work?
+                  Which “office” task do you want to see AI Ready cover the most?
                 </p>
                 <RadioGroup
-                  value={answers.q6_worry}
-                  onChange={(v) => updateSingle("q6_worry", v)}
+                  value={answers.q6_office}
+                  onChange={(v) => updateSingle("q6_office", v)}
                   options={[
-                    "Sounding unprofessional",
-                    "Getting the wrong answer",
-                    "Sharing sensitive information",
-                    "Looking inexperienced",
+                    "Email and communication",
+                    "Spreadsheets and data",
+                    "Presentations and slides",
+                    "Meetings: agendas, minutes, follow-ups",
+                    "Documents: rewriting and formatting",
                   ]}
                 />
               </>
             )}
 
-            {/* Slide 8 – Q7 */}
+            {/* Q7 – Lesson length (AI Ready micro-lessons) */}
             {step === 8 && (
               <>
                 <p className="text-base md:text-lg font-medium">
-                  If AI could reliably help you with one thing, what would matter
-                  most?
+                  What lesson length would you actually complete?
                 </p>
                 <RadioGroup
-                  value={answers.q7_outcome}
-                  onChange={(v) => updateSingle("q7_outcome", v)}
+                  value={answers.q7_length}
+                  onChange={(v) => updateSingle("q7_length", v)}
                   options={[
-                    "Saving time every week",
-                    "Producing clearer work",
-                    "Feeling confident using AI",
-                    "Knowing exactly what to ask",
+                    "1–2 minutes",
+                    "3–5 minutes",
+                    "5–10 minutes",
+                    "I prefer longer sessions",
+                  ]}
+                />
+              </>
+            )}
+
+            {/* Q8 – Learning format */}
+            {step === 9 && (
+              <>
+                <p className="text-base md:text-lg font-medium">
+                  Which learning style would suit you best in AI Ready?
+                </p>
+                <RadioGroup
+                  value={answers.q8_format}
+                  onChange={(v) => updateSingle("q8_format", v)}
+                  options={[
+                    "Short scenario lessons (real workplace situations)",
+                    "Ready-made prompts + examples",
+                    "Step-by-step walkthroughs",
+                    "Quick quizzes to test understanding",
+                  ]}
+                />
+              </>
+            )}
+
+            {/* Q9 – Age (required by you) */}
+            {step === 10 && (
+              <>
+                <p className="text-base md:text-lg font-medium">
+                  Which age group are you in?
+                </p>
+                <RadioGroup
+                  value={answers.q9_age}
+                  onChange={(v) => updateSingle("q9_age", v)}
+                  options={[
+                    "< 25",
+                    "25–34",
+                    "35–44",
+                    "45–54",
+                    "55–65",
+                    "65+",
+                  ]}
+                />
+              </>
+            )}
+
+            {/* Q10 – Start point */}
+            {step === 11 && (
+              <>
+                <p className="text-base md:text-lg font-medium">
+                  What would make AI Ready feel immediately valuable to you?
+                </p>
+                <RadioGroup
+                  value={answers.q10_start}
+                  onChange={(v) => updateSingle("q10_start", v)}
+                  options={[
+                    "A library of proven prompts I can reuse",
+                    "Examples for my exact work tasks",
+                    "A safe way to use AI without mistakes",
+                    "Clear step-by-step workflows",
                   ]}
                 />
                 <p className="text-xs text-slate-500 mt-3">Your results are next.</p>
               </>
             )}
 
-            {/* Slide 9 – Email capture */}
+            {/* Page 12 – Email capture (shows 100%) */}
             {step === EMAIL_STEP && (
               <>
                 <p className="text-base md:text-lg font-medium">
-                  Your results are ready — where should we email them?
+                  Final step — where should we send your AI Ready access link?
                 </p>
                 <p className="text-xs text-slate-400 mb-2">
-                  Enter your email to get early access to AI Ready. We’ll email
-                  you the app link when it’s available.
+                  Enter your email to join early access. We’ll email you the link to the AI Ready app.
                 </p>
                 <input
                   type="email"
