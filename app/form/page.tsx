@@ -118,11 +118,11 @@ export default function FormPage() {
   if (submitted) {
     return (
       <main className="min-h-screen bg-slate-950 flex items-center justify-center px-4">
-        <div className="w-full max-w-xl bg-slate-900 border border-slate-800 rounded-3xl p-8 shadow-xl text-center">
+        <div className="w-full max-w-xl bg-slate-900 border border-slate-800 rounded-3xl p-8 shadow-xl text-center text-slate-100">
           <p className="text-xs font-semibold tracking-[0.25em] text-slate-400 uppercase mb-3">
             AI Ready
           </p>
-          <h1 className="text-2xl font-semibold mb-3">Thank you!</h1>
+          <h1 className="text-2xl font-semibold mb-3 text-white">Thank you!</h1>
           <p className="text-sm text-slate-300">
             The link to AI Ready app will be sent to you shortly.
           </p>
@@ -152,17 +152,18 @@ export default function FormPage() {
 
   return (
     <main className="min-h-screen bg-slate-950 flex items-center justify-center px-4">
-      <div className="w-full max-w-3xl bg-slate-900 border border-slate-800 rounded-3xl p-6 md:p-8 shadow-xl">
-        {/* Header (design unchanged) */}
+      {/* ✅ Global text color fix: ensures any unstyled text is readable on dark background */}
+      <div className="w-full max-w-3xl bg-slate-900 border border-slate-800 rounded-3xl p-6 md:p-8 shadow-xl text-slate-100">
+        {/* Header */}
         <div className="flex items-center justify-between mb-4">
           <div>
             <p className="text-xs font-semibold tracking-[0.25em] text-slate-400 uppercase">
               AI Ready
             </p>
-            <h1 className="text-xl md:text-2xl font-semibold mt-1">
+            <h1 className="text-xl md:text-2xl font-semibold mt-1 text-white">
               {step === INTRO_STEP ? "AI feels risky… until it doesn’t." : "Quick AI Ready quiz"}
             </h1>
-            <p className="text-xs md:text-sm text-slate-400 mt-1">
+            <p className="text-xs md:text-sm text-slate-300 mt-1">
               {step === INTRO_STEP
                 ? "See how AI Ready helps you use AI safely for real work tasks."
                 : "Tap one answer per question."}
@@ -170,7 +171,7 @@ export default function FormPage() {
           </div>
         </div>
 
-        {/* Progress (no counter on intro; no progress bar on intro) */}
+        {/* Progress (hidden on intro) */}
         {showProgress && (
           <div className="mb-4">
             <div className="h-2 w-full bg-slate-800 rounded-full overflow-hidden">
@@ -206,23 +207,21 @@ export default function FormPage() {
                   />
                 </div>
 
-                <p className="text-base md:text-lg font-medium">
+                <p className="text-base md:text-lg font-medium text-white">
                   Before: AI breaks things. After: AI Ready makes AI useful.
                 </p>
                 <p className="text-sm text-slate-300 mt-2">
                   Answer 10 quick questions so we can tailor AI Ready to how you work — emails,
                   spreadsheets, presentations, summaries, and more.
                 </p>
-                <p className="text-xs text-slate-500 mt-3">
-                  No signup yet. Tap “Next” to start.
-                </p>
+                {/* ✅ Removed: "No signup yet..." */}
               </>
             )}
 
             {/* Q1 – Outcome (AI Ready value) */}
             {step === 2 && (
               <>
-                <p className="text-base md:text-lg font-medium">
+                <p className="text-base md:text-lg font-medium text-white">
                   What would you most like AI Ready to help you improve first?
                 </p>
                 <RadioGroup
@@ -242,7 +241,7 @@ export default function FormPage() {
             {/* Q2 – Confidence */}
             {step === 3 && (
               <>
-                <p className="text-base md:text-lg font-medium">
+                <p className="text-base md:text-lg font-medium text-white">
                   How do you currently feel about using AI at work?
                 </p>
                 <RadioGroup
@@ -261,7 +260,7 @@ export default function FormPage() {
             {/* Q3 – Primary use case */}
             {step === 4 && (
               <>
-                <p className="text-base md:text-lg font-medium">
+                <p className="text-base md:text-lg font-medium text-white">
                   Which work situation do you want AI Ready to train you for most?
                 </p>
                 <RadioGroup
@@ -281,7 +280,7 @@ export default function FormPage() {
             {/* Q4 – Biggest obstacle */}
             {step === 5 && (
               <>
-                <p className="text-base md:text-lg font-medium">
+                <p className="text-base md:text-lg font-medium text-white">
                   What’s the biggest thing that stops you getting reliable results from AI?
                 </p>
                 <RadioGroup
@@ -300,7 +299,7 @@ export default function FormPage() {
             {/* Q5 – Output preference */}
             {step === 6 && (
               <>
-                <p className="text-base md:text-lg font-medium">
+                <p className="text-base md:text-lg font-medium text-white">
                   Which type of output would be most useful day-to-day?
                 </p>
                 <RadioGroup
@@ -320,7 +319,7 @@ export default function FormPage() {
             {/* Q6 – Office tools focus */}
             {step === 7 && (
               <>
-                <p className="text-base md:text-lg font-medium">
+                <p className="text-base md:text-lg font-medium text-white">
                   Which “office” task do you want to see AI Ready cover the most?
                 </p>
                 <RadioGroup
@@ -340,18 +339,13 @@ export default function FormPage() {
             {/* Q7 – Lesson length (AI Ready micro-lessons) */}
             {step === 8 && (
               <>
-                <p className="text-base md:text-lg font-medium">
+                <p className="text-base md:text-lg font-medium text-white">
                   What lesson length would you actually complete?
                 </p>
                 <RadioGroup
                   value={answers.q7_length}
                   onChange={(v) => updateSingle("q7_length", v)}
-                  options={[
-                    "1–2 minutes",
-                    "3–5 minutes",
-                    "5–10 minutes",
-                    "I prefer longer sessions",
-                  ]}
+                  options={["1–2 minutes", "3–5 minutes", "5–10 minutes", "I prefer longer sessions"]}
                 />
               </>
             )}
@@ -359,7 +353,7 @@ export default function FormPage() {
             {/* Q8 – Learning format */}
             {step === 9 && (
               <>
-                <p className="text-base md:text-lg font-medium">
+                <p className="text-base md:text-lg font-medium text-white">
                   Which learning style would suit you best in AI Ready?
                 </p>
                 <RadioGroup
@@ -375,23 +369,16 @@ export default function FormPage() {
               </>
             )}
 
-            {/* Q9 – Age (required by you) */}
+            {/* Q9 – Age */}
             {step === 10 && (
               <>
-                <p className="text-base md:text-lg font-medium">
+                <p className="text-base md:text-lg font-medium text-white">
                   Which age group are you in?
                 </p>
                 <RadioGroup
                   value={answers.q9_age}
                   onChange={(v) => updateSingle("q9_age", v)}
-                  options={[
-                    "< 25",
-                    "25–34",
-                    "35–44",
-                    "45–54",
-                    "55–65",
-                    "65+",
-                  ]}
+                  options={["< 25", "25–34", "35–44", "45–54", "55–65", "65+"]}
                 />
               </>
             )}
@@ -399,7 +386,7 @@ export default function FormPage() {
             {/* Q10 – Start point */}
             {step === 11 && (
               <>
-                <p className="text-base md:text-lg font-medium">
+                <p className="text-base md:text-lg font-medium text-white">
                   What would make AI Ready feel immediately valuable to you?
                 </p>
                 <RadioGroup
@@ -416,13 +403,13 @@ export default function FormPage() {
               </>
             )}
 
-            {/* Page 12 – Email capture (shows 100%) */}
+            {/* Page 12 – Email capture */}
             {step === EMAIL_STEP && (
               <>
-                <p className="text-base md:text-lg font-medium">
+                <p className="text-base md:text-lg font-medium text-white">
                   Final step — where should we send your AI Ready access link?
                 </p>
-                <p className="text-xs text-slate-400 mb-2">
+                <p className="text-xs text-slate-300 mb-2">
                   Enter your email to join early access. We’ll email you the link to the AI Ready app.
                 </p>
                 <input
@@ -439,20 +426,20 @@ export default function FormPage() {
             )}
           </div>
 
-          {error && (
-            <p className="text-xs text-rose-400 mb-3 font-medium">{error}</p>
-          )}
+          {error && <p className="text-xs text-rose-400 mb-3 font-medium">{error}</p>}
 
-          {/* Buttons (design unchanged) */}
+          {/* Buttons */}
           <div className="flex items-center justify-between mt-4 gap-3">
-            <button
-              type="button"
-              onClick={back}
-              disabled={step === INTRO_STEP}
-              className="px-3 py-2 rounded-full border border-slate-700 text-xs md:text-sm text-slate-200 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-800 transition"
-            >
-              ← Back
-            </button>
+            {/* ✅ Back button hidden on page 1 */}
+            {step !== INTRO_STEP && (
+              <button
+                type="button"
+                onClick={back}
+                className="px-3 py-2 rounded-full border border-slate-700 text-xs md:text-sm text-slate-200 hover:bg-slate-800 transition"
+              >
+                ← Back
+              </button>
+            )}
 
             {step < TOTAL_STEPS && (
               <button
@@ -480,7 +467,7 @@ export default function FormPage() {
   );
 }
 
-/* --- Presentational components (unchanged) --- */
+/* --- Presentational components --- */
 
 function RadioGroup(props: {
   value: string;
