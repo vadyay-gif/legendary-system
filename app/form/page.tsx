@@ -208,7 +208,7 @@ export default function FormPage() {
             <p className="text-xs md:text-sm text-slate-300 mt-1">
               {step === INTRO_STEP
                 ? "See how AI Ready helps you use AI safely for real work tasks."
-                : "Tap one answer per question."}
+                : "Help us tailor AI Ready to you"}
             </p>
           </div>
         </div>
