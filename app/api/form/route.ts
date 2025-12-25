@@ -6,7 +6,7 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+const resend = new Resend(process.env.RESEND_API_KEY!);
 
 export async function POST(req: Request) {
   try {
@@ -17,9 +17,10 @@ export async function POST(req: Request) {
       return Response.json({ error: "Invalid email" }, { status: 400 });
     }
 
-    // Keep everything except email as answers
-    const { email: _ignore, ...answers } = body;
+    // Remove email from answers
+    const { email: _removed, ...answers } = body;
 
+    /* 1️⃣ Save to Supabase */
     const { error: dbError } = await supabase
       .from("early_access_signups")
       .upsert(
@@ -32,59 +33,61 @@ export async function POST(req: Request) {
       );
 
     if (dbError) {
-      console.error("Supabase insert error:", dbError);
-      return Response.json({ error: dbError.message }, { status: 500 });
+      console.error("Supabase error:", dbError);
+      return Response.json({ error: "Database error" }, { status: 500 });
     }
 
-    // Send welcome email with download link
-    const from = process.env.RESEND_FROM;
-    if (!from) {
-      console.error("Missing RESEND_FROM env var");
+    /* 2️⃣ Send email via Resend */
+    console.log("Sending email to:", email);
+
+    const { error: emailError } = await resend.emails.send({
+      from: process.env.RESEND_FROM!, // e.g. "AI Ready <hello@getaiready.app>"
+      to: email,
+      subject: "Welcome to AI Ready — your download link inside 🚀",
+      html: `
+        <div style="font-family: Arial, sans-serif; line-height: 1.6;">
+          <h2>Welcome to AI Ready 👋</h2>
+          <p>
+            You’re officially in! AI Ready helps you use AI safely and
+            confidently for real work — emails, spreadsheets, presentations,
+            summaries, and more.
+          </p>
+
+          <p><strong>Good news:</strong> AI Ready is already available on Android.</p>
+
+          <p style="margin: 24px 0;">
+            👉 <a href="https://play.google.com/store/apps/details?id=com.aiready.app&pcampaignid=web_share"
+               style="background:#4f46e5;color:#ffffff;padding:12px 18px;
+               border-radius:8px;text-decoration:none;display:inline-block;">
+               Download AI Ready on Google Play
+            </a>
+          </p>
+
+          <p>
+            We’ll keep improving AI Ready based on how people actually work —
+            and you’re part of that early group shaping it.
+          </p>
+
+          <p>
+            If you have feedback or questions, just reply to this email.
+          </p>
+
+          <p>
+            — The AI Ready Team
+          </p>
+        </div>
+      `,
+    });
+
+    if (emailError) {
+      console.error("Resend error:", emailError);
       return Response.json(
-        { error: "Server misconfigured (missing RESEND_FROM)" },
+        { error: "Email failed to send" },
         { status: 500 }
       );
     }
 
-    await resend.emails.send({
-      from,
-      to: email,
-      subject: "Your AI Ready download link is here 🚀",
-      html: `
-<div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;line-height:1.6;color:#111;">
-  <h2>Welcome to AI Ready 👋</h2>
-
-  <p>Thanks for signing up — your early access is ready.</p>
-
-  <p>
-    <strong>AI Ready helps you use AI safely and practically for real work tasks</strong>
-    like emails, spreadsheets, summaries, and presentations — without the confusion or risk.
-  </p>
-
-  <p>You can download the Android app here:</p>
-
-  <p style="margin:24px 0;">
-    <a
-      href="https://play.google.com/store/apps/details?id=com.aiready.app&pcampaignid=web_share"
-      style="background:#6C63FF;color:#fff;padding:12px 18px;border-radius:8px;text-decoration:none;font-weight:600;display:inline-block;"
-    >
-      📲 Download AI Ready for Android
-    </a>
-  </p>
-
-  <p>
-    You’re now part of the early group helping shape AI Ready.
-    If you have feedback or ideas, just reply to this email — we read every message.
-  </p>
-
-  <p style="margin-top:24px;">— The AI Ready Team</p>
-
-  <p style="font-size:12px;color:#666;margin-top:28px;">
-    You’re receiving this email because you signed up for AI Ready early access on getaiready.app.
-  </p>
-</div>
-      `,
-    });
+    console.log("Email sent successfully to:", email);
 
     return Response.json({ ok: true }, { status: 200 });
   } catch (err) {
