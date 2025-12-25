@@ -1,17 +1,13 @@
 import { createClient } from "@supabase/supabase-js";
 
-export const runtime = "nodejs"; // IMPORTANT: Resend should run in Node, not Edge
+export const runtime = "nodejs"; // Resend should run in Node (not Edge)
 
 const supabase = createClient(
   process.env.SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
-type Body = {
-  email?: unknown;
-  source?: unknown;
-  [key: string]: unknown;
-};
+type Body = Record<string, unknown>;
 
 function isValidEmail(email: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -53,7 +49,7 @@ async function sendWelcomeEmail(to: string) {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      from, // must look like: AI Ready <hello@getaiready.app>
+      from, // e.g. "AI Ready <hello@getaiready.app>"
       to: [to],
       subject,
       html,
@@ -70,27 +66,22 @@ export async function POST(req: Request) {
   try {
     const body = (await req.json()) as Body;
 
-    const email = String(body.email ?? "")
-      .trim()
-      .toLowerCase();
-
+    const email = String(body.email ?? "").trim().toLowerCase();
     if (!email || !isValidEmail(email)) {
       return Response.json({ error: "Invalid email" }, { status: 400 });
     }
 
     const source = String(body.source ?? "popup-quiz");
 
-    // Store everything except email/source as answers
-    const { email: _omitEmail, source: _omitSource, ...answers } = body;
+    // Build answers WITHOUT creating unused vars:
+    const answers: Record<string, unknown> = { ...body };
+    delete answers.email;
+    delete answers.source;
 
     const { error: dbError } = await supabase
       .from("early_access_signups")
       .upsert(
-        {
-          email,
-          answers, // JSON column recommended
-          source,
-        },
+        { email, answers, source },
         { onConflict: "email" }
       );
 
@@ -99,7 +90,6 @@ export async function POST(req: Request) {
       return Response.json({ error: dbError.message }, { status: 500 });
     }
 
-    // Send the email after storing the signup
     await sendWelcomeEmail(email);
 
     return Response.json({ ok: true }, { status: 200 });
