@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import amplitude from "./amplitude";
+import amplitude from "@/amplitude";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 
