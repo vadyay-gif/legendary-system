@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import amplitude from "@/amplitude";
+import amplitude from "../amplitude";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 
@@ -39,20 +39,19 @@ export default function FunnelPage() {
 
   const [step, setStep] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string>>({});
-  const progress = useMemo(
-    () => Math.round((step / quiz.length) * 100),
-    [step, quiz.length]
-  );
+  const progress = useMemo(() => Math.round((step / quiz.length) * 100), [step, quiz.length]);
 
-  // --------- Ultra credit-saving tracking helpers ----------
+  // --- Minimal attribution + tracking (only used on final store clicks) ---
   function getPropellerAttribution() {
-    // Propeller passes: ?zoneid=...&clickid=...
+    if (typeof window === "undefined") return { zoneid: "", clickid: "" };
+
     const params = new URLSearchParams(window.location.search);
 
+    // Propeller passes: ?zoneid=...&clickid=...
     const zoneid = params.get("zoneid") || localStorage.getItem("propeller_zoneid") || "";
     const clickid = params.get("clickid") || localStorage.getItem("propeller_clickid") || "";
 
-    // Save once so it stays for later (email click redirect page, etc.)
+    // Store for later (so the /r redirect page can also use it)
     if (params.get("zoneid")) localStorage.setItem("propeller_zoneid", params.get("zoneid")!);
     if (params.get("clickid")) localStorage.setItem("propeller_clickid", params.get("clickid")!);
 
@@ -62,22 +61,17 @@ export default function FunnelPage() {
   function track(eventName: string, props: Record<string, unknown> = {}) {
     amplitude.track(eventName, props);
   }
-  // --------------------------------------------------------
+  // ------------------------------------------------------------
 
   function chooseAnswer(a: string) {
     const q = quiz[step];
     if (!q) return;
+
     setAnswers((prev) => ({ ...prev, [q.key]: a }));
+
     if (step < quiz.length - 1) setStep((s) => s + 1);
     else setStep(quiz.length);
   }
-
-  // OPTIONAL: If you want to track "reached final results page" (very low volume)
-  // You said you only want:
-  // - email page viewed
-  // - email submitted
-  // - email app link clicked
-  // So we are NOT tracking any step views here.
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white text-slate-900">
@@ -88,7 +82,9 @@ export default function FunnelPage() {
             <div className="mb-6 text-sm text-slate-500">
               Step {step + 1} of {quiz.length}
             </div>
+
             <h2 className="text-2xl font-semibold">{quiz[step].question}</h2>
+
             <div className="mt-6 grid gap-3">
               {quiz[step].answers.map((a, i) => (
                 <button
@@ -100,33 +96,35 @@ export default function FunnelPage() {
                 </button>
               ))}
             </div>
+
             <div className="mt-6 text-sm text-slate-500">{progress}% complete</div>
           </div>
         ) : (
           <div className="rounded-2xl border bg-white p-6 shadow-sm">
             <h2 className="text-2xl font-bold">Your AI Ready Plan</h2>
-            <p className="mt-2 text-slate-600">
-              Based on your answers, here’s the best place to start.
-            </p>
+            <p className="mt-2 text-slate-600">Based on your answers, here’s the best place to start.</p>
+
             <div className="mt-6 rounded-xl border p-4">
-              <p className="text-slate-700">
-                Start with: {answers.track || "Everyday Communication"}
-              </p>
+              <p className="text-slate-700">Start with: {answers.track || "Everyday Communication"}</p>
             </div>
 
             <div className="mt-6 grid gap-2">
-              {/* These should be the real store URLs. Keep as # for now if you want. */}
               <a
                 className="px-4 py-2 rounded-xl border text-center"
                 href="#"
-                onClick={() => {
+                onClick={(e) => {
+                  e.preventDefault();
                   const { zoneid, clickid } = getPropellerAttribution();
-                  // Minimal click tracking (still low volume because only quiz finishers click)
+
+                  // Ultra credit-saving: only track this click
                   track("store_click", {
                     store: "ios",
                     zoneid: zoneid || null,
                     clickid: clickid || null,
                   });
+
+                  // TODO: Replace with your real App Store URL
+                  // window.location.href = "https://apps.apple.com/...";
                 }}
               >
                 App Store (iOS)
@@ -135,13 +133,18 @@ export default function FunnelPage() {
               <a
                 className="px-4 py-2 rounded-xl border text-center"
                 href="#"
-                onClick={() => {
+                onClick={(e) => {
+                  e.preventDefault();
                   const { zoneid, clickid } = getPropellerAttribution();
+
                   track("store_click", {
                     store: "android",
                     zoneid: zoneid || null,
                     clickid: clickid || null,
                   });
+
+                  // TODO: Replace with your real Google Play URL
+                  // window.location.href = "https://play.google.com/store/apps/details?id=...";
                 }}
               >
                 Google Play (Android)
