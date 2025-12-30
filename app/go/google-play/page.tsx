@@ -9,7 +9,8 @@ export default function GooglePlayRedirect() {
     const clickid = params.get("clickid");
 
     // Track the email click (ONE event)
-    window.amplitude?.track("email_link_clicked", {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (window as any).amplitude?.track?.("email_link_clicked", {
       platform: "google_play",
       zoneid,
       clickid,
@@ -17,7 +18,7 @@ export default function GooglePlayRedirect() {
 
     // Redirect immediately to Google Play
     window.location.replace(
-      "https://play.google.com/store/apps/details?id=com.aiready.app"
+      "https://play.google.com/store/apps/details?id=com.aiready.app&pcampaignid=web_share"
     );
   }, []);
 
