@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 
 // ----------------------------
 // Ultra credit-saving tracking
@@ -228,6 +228,63 @@ export default function FormPage() {
     return `${n} selected — choose ${remaining} more.`;
   }, [answers.q7_tracks.length]);
 
+  // --- Options (edit anytime) ---
+  const Q1_OPTIONS = ["Yes, regularly", "Sometimes", "Tried it a bit", "Not yet"];
+  const Q2_OPTIONS = ["Very confident", "Somewhat confident", "Not confident yet"];
+
+  const Q3_OPTIONS = [
+    "I waste time rewriting emails/messages",
+    "I struggle to start (blank page / unclear plan)",
+    "I need faster research & summaries",
+    "My docs/presentations take too long",
+    "I don’t know what to ask AI",
+    "I worry about accuracy & mistakes",
+  ];
+
+  const Q4_OPTIONS = [
+    "Emails & messages",
+    "Summaries of docs/meetings",
+    "Ideas & brainstorming",
+    "Presentations & slides",
+    "Spreadsheets & analysis",
+    "Planning & prioritisation",
+  ];
+
+  const Q5_OPTIONS = [
+    "Writing clearer emails/messages",
+    "Turning messy notes into clean summaries",
+    "Creating presentations faster",
+    "Getting quick research & explanations",
+  ];
+
+  const Q6_OPTIONS = [
+    "Short practical examples",
+    "Step-by-step walkthroughs",
+    "Templates I can copy/paste",
+    "Quick quizzes & practice",
+  ];
+
+  const Q7_OPTIONS = [
+    "Core Prompting",
+    "Email & Writing",
+    "Meetings & Summaries",
+    "Research & Learning",
+    "Presentations",
+    "Spreadsheets",
+    "Decision-making",
+    "Automation",
+    "Brainstorming & Strategy",
+  ];
+
+  const Q8_OPTIONS = ["3–5 minutes", "6–10 minutes", "11–15 minutes"];
+  const Q9_OPTIONS = ["18–24", "25–34", "35–44", "45–54", "55+"];
+
+  const Q10_OPTIONS = [
+    "Yes — send me the Android link",
+    "Maybe later — still interested",
+    "No — not for me",
+  ];
+
   // Thank you page (no progress/counter)
   if (submitted) {
     return (
@@ -310,7 +367,151 @@ export default function FormPage() {
               </>
             )}
 
-            {/* ... your question steps unchanged ... */}
+            {/* Page 2 – Q1 */}
+            {step === 2 && (
+              <>
+                <p className="text-base md:text-lg font-medium text-white">
+                  Do you already use AI for work?
+                </p>
+                <RadioGroup
+                  value={answers.q1_ai_use}
+                  onChange={(v) => updateSingle("q1_ai_use", v)}
+                  options={Q1_OPTIONS}
+                />
+              </>
+            )}
+
+            {/* Page 3 – Q2 */}
+            {step === 3 && (
+              <>
+                <p className="text-base md:text-lg font-medium text-white">
+                  How confident do you feel using AI effectively?
+                </p>
+                <RadioGroup
+                  value={answers.q2_confidence}
+                  onChange={(v) => updateSingle("q2_confidence", v)}
+                  options={Q2_OPTIONS}
+                />
+              </>
+            )}
+
+            {/* Page 4 – Q3 (multi max 3) */}
+            {step === 4 && (
+              <>
+                <p className="text-base md:text-lg font-medium text-white">
+                  What are your biggest work pain points right now?
+                </p>
+                <p className="text-xs text-slate-300">Select up to {Q3_MAX}.</p>
+                <MultiSelectGroup
+                  value={answers.q3_pains}
+                  onChange={(v) => updateSingle("q3_pains", v)}
+                  options={Q3_OPTIONS}
+                  maxSelected={Q3_MAX}
+                />
+              </>
+            )}
+
+            {/* Page 5 – Q4 (multi max 3) */}
+            {step === 5 && (
+              <>
+                <p className="text-base md:text-lg font-medium text-white">
+                  Which AI use cases would help you most?
+                </p>
+                <p className="text-xs text-slate-300">Select up to {Q4_MAX}.</p>
+                <MultiSelectGroup
+                  value={answers.q4_usecases}
+                  onChange={(v) => updateSingle("q4_usecases", v)}
+                  options={Q4_OPTIONS}
+                  maxSelected={Q4_MAX}
+                />
+              </>
+            )}
+
+            {/* Page 6 – Q5 */}
+            {step === 6 && (
+              <>
+                <p className="text-base md:text-lg font-medium text-white">
+                  If AI Ready helped you with ONE thing first, what should it be?
+                </p>
+                <RadioGroup
+                  value={answers.q5_fastest_help}
+                  onChange={(v) => updateSingle("q5_fastest_help", v)}
+                  options={Q5_OPTIONS}
+                />
+              </>
+            )}
+
+            {/* Page 7 – Q6 */}
+            {step === 7 && (
+              <>
+                <p className="text-base md:text-lg font-medium text-white">
+                  How do you prefer to learn?
+                </p>
+                <RadioGroup
+                  value={answers.q6_learn_style}
+                  onChange={(v) => updateSingle("q6_learn_style", v)}
+                  options={Q6_OPTIONS}
+                />
+              </>
+            )}
+
+            {/* Page 8 – Q7 (multi exactly 3) */}
+            {step === 8 && (
+              <>
+                <p className="text-base md:text-lg font-medium text-white">
+                  Pick exactly {Q7_EXACT} tracks you’d want inside AI Ready
+                </p>
+                <p className="text-xs text-slate-300">{q7Helper}</p>
+                <MultiSelectGroup
+                  value={answers.q7_tracks}
+                  onChange={(v) => updateSingle("q7_tracks", v)}
+                  options={Q7_OPTIONS}
+                  maxSelected={Q7_EXACT}
+                />
+              </>
+            )}
+
+            {/* Page 9 – Q8 */}
+            {step === 9 && (
+              <>
+                <p className="text-base md:text-lg font-medium text-white">
+                  What lesson length fits your schedule best?
+                </p>
+                <RadioGroup
+                  value={answers.q8_length}
+                  onChange={(v) => updateSingle("q8_length", v)}
+                  options={Q8_OPTIONS}
+                />
+              </>
+            )}
+
+            {/* Page 10 – Q9 */}
+            {step === 10 && (
+              <>
+                <p className="text-base md:text-lg font-medium text-white">
+                  What’s your age range?
+                </p>
+                <RadioGroup
+                  value={answers.q9_age}
+                  onChange={(v) => updateSingle("q9_age", v)}
+                  options={Q9_OPTIONS}
+                />
+              </>
+            )}
+
+            {/* Page 11 – Q10 */}
+            {step === 11 && (
+              <>
+                <p className="text-base md:text-lg font-medium text-white">
+                  AI Ready is already available on Android. Do you want the download link?
+                </p>
+                <RadioGroup
+                  value={answers.q10_download}
+                  onChange={(v) => updateSingle("q10_download", v)}
+                  options={Q10_OPTIONS}
+                />
+              </>
+            )}
 
             {/* Page 12 – Email capture */}
             {step === EMAIL_STEP && (
@@ -453,6 +654,7 @@ function MultiSelectGroup(props: {
           </button>
         );
       })}
+
       <p className="text-[11px] text-slate-500 mt-1">
         {value.length}/{maxSelected} selected
       </p>
