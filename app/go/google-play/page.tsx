@@ -2,6 +2,9 @@
 
 import { useEffect, useRef } from "react";
 
+const PLAY_STORE_URL =
+  "https://play.google.com/store/apps/details?id=com.aiready.app";
+
 export default function GooglePlayRedirectPage() {
   const firedRef = useRef(false);
 
@@ -12,31 +15,55 @@ export default function GooglePlayRedirectPage() {
     const params = new URLSearchParams(window.location.search);
     const zoneid = params.get("zoneid");
     const clickid = params.get("clickid");
-    const eid = params.get("eid");
+    const eid = params.get("eid"); // optional (legacy email links)
+    const src = params.get("src") || (eid ? "email" : "funnel");
+    const sid = params.get("sid"); // optional session id from funnel
 
-    // Track click (safe TS access)
+    // Track redirect handoff (do not block redirect if amplitude missing)
     (window as unknown as {
       amplitude?: {
         track?: (name: string, props?: Record<string, unknown>) => void;
       };
-    })
-      .amplitude
-      ?.track?.("email_link_clicked", {
-        platform: "google_play",
-        zoneid,
-        clickid,
-        eid,
-      });
+    }).amplitude?.track?.("google_play_redirect_loaded", {
+      platform: "google_play",
+      source: src,
+      zoneid,
+      clickid,
+      eid,
+      session_id: sid,
+    });
 
-    // Redirect to Google Play
-    window.location.href =
-      "https://play.google.com/store/apps/details?id=com.aiready.app&pcampaignid=web_share";
+    // Short delay to give analytics a chance to fire, then redirect
+    const t = window.setTimeout(() => {
+      window.location.href = PLAY_STORE_URL;
+    }, 250);
+
+    return () => window.clearTimeout(t);
   }, []);
 
-  // ✅ REQUIRED: return JSX so Next.js is satisfied
   return (
     <main style={{ padding: 24, fontFamily: "Arial, sans-serif" }}>
-      Redirecting to Google Play…
+      <div style={{ maxWidth: 560 }}>
+        <div style={{ marginBottom: 8 }}>Redirecting to Google Play…</div>
+        <div style={{ fontSize: 12, opacity: 0.75, marginBottom: 12 }}>
+          If nothing happens, tap the button below.
+        </div>
+        <a
+          href={PLAY_STORE_URL}
+          style={{
+            display: "inline-block",
+            padding: "10px 14px",
+            borderRadius: 12,
+            background: "#4f46e5",
+            color: "white",
+            textDecoration: "none",
+            fontSize: 14,
+            fontWeight: 600,
+          }}
+        >
+          Open Google Play →
+        </a>
+      </div>
     </main>
   );
 }
