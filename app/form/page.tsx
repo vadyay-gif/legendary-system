@@ -39,7 +39,6 @@ function getSessionId() {
   const existing = localStorage.getItem(key);
   if (existing) return existing;
 
-  // Prefer randomUUID where available
   const sid =
     (typeof crypto !== "undefined" && "randomUUID" in crypto
       ? crypto.randomUUID()
@@ -51,7 +50,6 @@ function getSessionId() {
 
 function trackEvent(name: string, props?: Record<string, unknown>) {
   if (typeof window === "undefined") return;
-
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   (window as any).amplitude?.track?.(name, props);
 }
@@ -72,19 +70,19 @@ const TOTAL_STEPS = FINAL_STEP;
 // Selection rules
 const Q3_MAX = 3; // pain points: up to 3
 const Q4_MAX = 3; // use cases: up to 3
-const Q7_MAX = 3; // tracks: up to 3 (NOT exactly 3)
+const Q7_MAX = 3; // tracks: up to 3
 
 type Answers = {
-  q1_ai_use: string; // single
-  q2_confidence: string; // single
-  q3_pains: string[]; // multi (<=3)
-  q4_usecases: string[]; // multi (<=3)
-  q5_fastest_help: string; // single
-  q6_learn_style: string; // single
-  q7_tracks: string[]; // multi (<=3)
-  q8_length: string; // single
-  q9_age: string; // single
-  q10_momentum: string; // single (new)
+  q1_ai_use: string;
+  q2_confidence: string;
+  q3_pains: string[];
+  q4_usecases: string[];
+  q5_fastest_help: string;
+  q6_learn_style: string;
+  q7_tracks: string[];
+  q8_length: string;
+  q9_age: string;
+  q10_momentum: string;
 };
 
 export default function FormPage() {
@@ -115,11 +113,7 @@ export default function FormPage() {
     const { zoneid, clickid } = getPropellerParams();
     const session_id = getSessionId();
 
-    trackEvent("quiz_started", {
-      zoneid,
-      clickid,
-      session_id,
-    });
+    trackEvent("quiz_started", { zoneid, clickid, session_id });
   }, [step]);
 
   // --- Analytics: step_viewed once per step ---
@@ -132,12 +126,7 @@ export default function FormPage() {
     const { zoneid, clickid } = getPropellerParams();
     const session_id = getSessionId();
 
-    trackEvent("step_viewed", {
-      step,
-      zoneid,
-      clickid,
-      session_id,
-    });
+    trackEvent("step_viewed", { step, zoneid, clickid, session_id });
   }, [step]);
 
   // --- Analytics: quiz_completed once when reaching final step ---
@@ -151,11 +140,7 @@ export default function FormPage() {
     const { zoneid, clickid } = getPropellerParams();
     const session_id = getSessionId();
 
-    trackEvent("quiz_completed", {
-      zoneid,
-      clickid,
-      session_id,
-    });
+    trackEvent("quiz_completed", { zoneid, clickid, session_id });
   }, [step]);
 
   // Question number for steps 2–11 (1–10), else 0
@@ -234,31 +219,64 @@ export default function FormPage() {
     }
   }
 
-  function buildPersonalizedLines() {
-    // Concise Option B:
-    // "Based on your answers:" + 2 pain points + 2–3 help lines
-    const pains = answers.q3_pains.slice(0, 2);
-    const usecases = answers.q4_usecases.slice(0, 2);
-    const tracks = answers.q7_tracks.slice(0, 3);
+  function mapMomentumToOutcome(m: string): string | null {
+    // Keep it concise + career/time oriented
+    if (!m) return null;
+    if (m.toLowerCase().includes("save")) return "Save hours every week";
+    if (m.toLowerCase().includes("advantage")) return "Gain a real advantage at work";
+    if (m.toLowerCase().includes("confident")) return "Feel confident using AI";
+    if (m.toLowerCase().includes("second-guess")) return "Stop second-guessing AI outputs";
+    return null;
+  }
 
-    const youToldUs: string[] = [];
-    if (pains[0]) youToldUs.push(pains[0]);
-    if (pains[1]) youToldUs.push(pains[1]);
+  function buildHelpLines() {
+    // Approved structure:
+    // ✅ Start with: [Q5]
+    // ✅ Get faster results for: [Q4 #1]
+    // ✅ Improve your workflow for: [Q4 #2]
+    // ✅ Build a real skill in: [Q7 tracks]
+    // ✅ Learn C.O.R.E. prompting method for best results
+    // ✅ In [Q8] lessons that fit your schedule
+    // ✅ So you can [Q10 outcome] (optional)
 
-    // Help lines: prioritize use cases, then tracks as skill outcomes
-    const wellHelpYou: string[] = [];
-    if (usecases[0]) wellHelpYou.push(`Get faster results for: ${usecases[0]}`);
-    if (usecases[1]) wellHelpYou.push(`Improve your workflow for: ${usecases[1]}`);
+    const lines: string[] = [];
 
-    // Track-based (career skill builder angle)
-    if (tracks.length > 0) {
-      wellHelpYou.push(`Build a real skill in: ${tracks.join(", ")}`);
-    } else {
-      // fallback if none
-      wellHelpYou.push("Build a repeatable AI workflow you can trust at work");
+    if (answers.q5_fastest_help) {
+      lines.push(`Start with: ${answers.q5_fastest_help}`);
     }
 
-    return { youToldUs, wellHelpYou };
+    const uc1 = answers.q4_usecases[0];
+    const uc2 = answers.q4_usecases[1];
+    if (uc1) lines.push(`Get faster results for: ${uc1}`);
+    if (uc2) lines.push(`Improve your workflow for: ${uc2}`);
+
+    const tracks = answers.q7_tracks.slice(0, 3);
+    if (tracks.length > 0) {
+      lines.push(`Build a real skill in: ${tracks.join(", ")}`);
+    }
+
+    lines.push("Learn C.O.R.E. prompting method for best results");
+
+    if (answers.q8_length) {
+      lines.push(`In ${answers.q8_length} lessons that fit your schedule`);
+    }
+
+    const outcome = mapMomentumToOutcome(answers.q10_momentum);
+    if (outcome) lines.push(`So you can ${outcome.toLowerCase()}`);
+
+    // Aim for 6–7 items. If we’re short (e.g. only one usecase),
+    // add a confidence-oriented filler derived from Q2 (still accurate).
+    if (lines.length < 6 && answers.q2_confidence) {
+      if (answers.q2_confidence === "Not confident yet") {
+        lines.push("Get predictable results without guessing");
+      } else if (answers.q2_confidence === "Somewhat confident") {
+        lines.push("Make your AI outputs more consistent at work");
+      } else {
+        lines.push("Level up your AI outcomes with structure");
+      }
+    }
+
+    return lines.slice(0, 7);
   }
 
   const q7Helper = useMemo(() => {
@@ -331,16 +349,17 @@ export default function FormPage() {
     const { zoneid, clickid } = getPropellerParams();
     const session_id = getSessionId();
 
-    // Track intent click
     trackEvent("google_play_cta_clicked", {
       zoneid,
       clickid,
       session_id,
-      // lightweight context for analysis
       top_pains: answers.q3_pains.slice(0, 3),
       top_usecases: answers.q4_usecases.slice(0, 3),
       tracks: answers.q7_tracks.slice(0, 3),
       momentum: answers.q10_momentum,
+      age: answers.q9_age,
+      confidence: answers.q2_confidence,
+      lesson_length: answers.q8_length,
     });
 
     // Same-window redirect through tracked bridge page
@@ -353,10 +372,13 @@ export default function FormPage() {
     window.location.href = url.toString();
   }
 
-  const { youToldUs, wellHelpYou } = useMemo(() => buildPersonalizedLines(), [
-    answers.q3_pains,
+  const helpLines = useMemo(() => buildHelpLines(), [
+    answers.q2_confidence,
     answers.q4_usecases,
+    answers.q5_fastest_help,
     answers.q7_tracks,
+    answers.q8_length,
+    answers.q10_momentum,
   ]);
 
   return (
@@ -578,25 +600,12 @@ export default function FormPage() {
                   <span className="font-medium text-slate-100">Based on your answers:</span>
                 </p>
 
-                {youToldUs.length > 0 && (
-                  <div className="mt-3 rounded-2xl border border-slate-800 bg-slate-900 p-4">
-                    <p className="text-xs uppercase tracking-[0.2em] text-slate-400 mb-2">
-                      You told us
-                    </p>
-                    <ul className="text-sm text-slate-200 space-y-1">
-                      {youToldUs.map((x) => (
-                        <li key={x}>• {x}</li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-
                 <div className="mt-3 rounded-2xl border border-slate-800 bg-slate-900 p-4">
                   <p className="text-xs uppercase tracking-[0.2em] text-slate-400 mb-2">
                     We’ll help you
                   </p>
                   <ul className="text-sm text-slate-200 space-y-1">
-                    {wellHelpYou.slice(0, 3).map((x) => (
+                    {helpLines.map((x) => (
                       <li key={x}>✔ {x}</li>
                     ))}
                   </ul>
@@ -616,7 +625,7 @@ export default function FormPage() {
                   </button>
 
                   <p className="text-[11px] text-slate-400 mt-2 text-center">
-                    Free download • No login required
+                    Free for early adopters
                   </p>
                 </div>
               </>
@@ -627,7 +636,7 @@ export default function FormPage() {
 
           {/* Buttons */}
           <div className="flex items-center justify-between mt-4 gap-3">
-            {step !== INTRO_STEP && step !== FINAL_STEP && (
+            {step !== INTRO_STEP && (
               <button
                 type="button"
                 onClick={back}
@@ -637,15 +646,7 @@ export default function FormPage() {
               </button>
             )}
 
-            {step === FINAL_STEP ? (
-              <button
-                type="button"
-                onClick={back}
-                className="px-3 py-2 rounded-full border border-slate-700 text-xs md:text-sm text-slate-200 hover:bg-slate-800 transition"
-              >
-                ← Back
-              </button>
-            ) : step < TOTAL_STEPS ? (
+            {step < TOTAL_STEPS ? (
               <button
                 type="button"
                 onClick={next}
@@ -653,11 +654,10 @@ export default function FormPage() {
               >
                 Next →
               </button>
-            ) : (
+            ) : step === LAST_QUESTION_STEP ? (
               <button
                 type="button"
                 onClick={() => {
-                  // Validate Q10, then move to final step
                   if (!validateStep(step)) return;
                   setStep(FINAL_STEP);
                 }}
@@ -665,7 +665,7 @@ export default function FormPage() {
               >
                 Next →
               </button>
-            )}
+            ) : null}
           </div>
         </div>
       </div>
