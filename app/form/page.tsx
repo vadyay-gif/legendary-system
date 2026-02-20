@@ -4,13 +4,16 @@ import Image from "next/image";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 
 // ----------------------------
-// Ultra credit-saving tracking
-// Tracks ONLY:
-// 1) email_page_viewed (when step === EMAIL_STEP) — once per user
-// 2) email_submitted (ONLY after successful /api/form response)
+// Analytics (Amplitude via window.amplitude)
+// Tracks:
+// - quiz_started (once)
+// - step_viewed (once per step)
+// - quiz_completed (once when final page is reached)
+// - google_play_cta_clicked (on CTA click)
 // Uses Propeller params: ?zoneid=...&clickid=...
-// Uses global window.amplitude (NO "@/amplitude" import)
+// Adds stable session_id in localStorage
 // ----------------------------
+
 function getPropellerParams() {
   if (typeof window === "undefined") {
     return { zoneid: null as string | null, clickid: null as string | null };
@@ -30,23 +33,46 @@ function getPropellerParams() {
   };
 }
 
+function getSessionId() {
+  if (typeof window === "undefined") return null as string | null;
+  const key = "ai_ready_session_id";
+  const existing = localStorage.getItem(key);
+  if (existing) return existing;
+
+  // Prefer randomUUID where available
+  const sid =
+    (typeof crypto !== "undefined" && "randomUUID" in crypto
+      ? crypto.randomUUID()
+      : `sid_${Math.random().toString(16).slice(2)}_${Date.now()}`) as string;
+
+  localStorage.setItem(key, sid);
+  return sid;
+}
+
+function trackEvent(name: string, props?: Record<string, unknown>) {
+  if (typeof window === "undefined") return;
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (window as any).amplitude?.track?.(name, props);
+}
+
 // Funnel structure:
 // Page 1  = intro (no % counter)
 // Page 2–11 = 10 questions (Q1 shows 0%)
-// Page 12 = email capture (shows 100%)
-// Thank-you page shows after submit (no % counter)
+// Page 12 = final personalized install page (shows 100%)
+// No thank-you page. No email.
 
 const TOTAL_QUESTIONS = 10;
 const INTRO_STEP = 1;
 const FIRST_QUESTION_STEP = 2;
 const LAST_QUESTION_STEP = FIRST_QUESTION_STEP + TOTAL_QUESTIONS - 1; // 11
-const EMAIL_STEP = LAST_QUESTION_STEP + 1; // 12
-const TOTAL_STEPS = EMAIL_STEP;
+const FINAL_STEP = LAST_QUESTION_STEP + 1; // 12
+const TOTAL_STEPS = FINAL_STEP;
 
 // Selection rules
 const Q3_MAX = 3; // pain points: up to 3
 const Q4_MAX = 3; // use cases: up to 3
-const Q7_EXACT = 3; // tracks: exactly 3
+const Q7_MAX = 3; // tracks: up to 3 (NOT exactly 3)
 
 type Answers = {
   q1_ai_use: string; // single
@@ -55,17 +81,14 @@ type Answers = {
   q4_usecases: string[]; // multi (<=3)
   q5_fastest_help: string; // single
   q6_learn_style: string; // single
-  q7_tracks: string[]; // multi (=3)
+  q7_tracks: string[]; // multi (<=3)
   q8_length: string; // single
   q9_age: string; // single
-  q10_download: string; // single
-  email: string;
+  q10_momentum: string; // single (new)
 };
 
 export default function FormPage() {
   const [step, setStep] = useState<number>(INTRO_STEP);
-  const [submitting, setSubmitting] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const [answers, setAnswers] = useState<Answers>({
@@ -78,25 +101,60 @@ export default function FormPage() {
     q7_tracks: [],
     q8_length: "",
     q9_age: "",
-    q10_download: "",
-    email: "",
+    q10_momentum: "",
   });
 
-  // ---- Ultra-minimal event #1: email page viewed (once per user) ----
-  const emailPageTrackedRef = useRef(false);
+  // --- Analytics: quiz_started once (when user enters Q1 the first time) ---
+  const quizStartedRef = useRef(false);
 
   useEffect(() => {
-    if (step !== EMAIL_STEP) return;
-    if (emailPageTrackedRef.current) return;
+    if (quizStartedRef.current) return;
+    if (step !== FIRST_QUESTION_STEP) return;
 
-    emailPageTrackedRef.current = true;
-
+    quizStartedRef.current = true;
     const { zoneid, clickid } = getPropellerParams();
+    const session_id = getSessionId();
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (window as any).amplitude?.track?.("email_page_viewed", {
+    trackEvent("quiz_started", {
       zoneid,
       clickid,
+      session_id,
+    });
+  }, [step]);
+
+  // --- Analytics: step_viewed once per step ---
+  const stepViewedRef = useRef<Set<number>>(new Set());
+
+  useEffect(() => {
+    if (stepViewedRef.current.has(step)) return;
+    stepViewedRef.current.add(step);
+
+    const { zoneid, clickid } = getPropellerParams();
+    const session_id = getSessionId();
+
+    trackEvent("step_viewed", {
+      step,
+      zoneid,
+      clickid,
+      session_id,
+    });
+  }, [step]);
+
+  // --- Analytics: quiz_completed once when reaching final step ---
+  const quizCompletedRef = useRef(false);
+
+  useEffect(() => {
+    if (quizCompletedRef.current) return;
+    if (step !== FINAL_STEP) return;
+
+    quizCompletedRef.current = true;
+    const { zoneid, clickid } = getPropellerParams();
+    const session_id = getSessionId();
+
+    trackEvent("quiz_completed", {
+      zoneid,
+      clickid,
+      session_id,
     });
   }, [step]);
 
@@ -106,7 +164,7 @@ export default function FormPage() {
 
   const showProgress = step !== INTRO_STEP;
   const progress =
-    step === EMAIL_STEP
+    step === FINAL_STEP
       ? 100
       : step >= FIRST_QUESTION_STEP && step <= LAST_QUESTION_STEP
       ? Math.round(((questionNumber - 1) / TOTAL_QUESTIONS) * 100) // Q1 => 0%
@@ -117,7 +175,7 @@ export default function FormPage() {
       ? ""
       : step >= FIRST_QUESTION_STEP && step <= LAST_QUESTION_STEP
       ? `Question ${questionNumber} of ${TOTAL_QUESTIONS}`
-      : "Email";
+      : "Your plan";
 
   function updateSingle<K extends keyof Answers>(name: K, value: Answers[K]) {
     setAnswers((prev) => ({ ...prev, [name]: value }));
@@ -135,7 +193,7 @@ export default function FormPage() {
     if (s === INTRO_STEP) return true;
 
     // Step mapping:
-    // 2: Q1, 3: Q2, 4: Q3, 5: Q4, 6: Q5, 7: Q6, 8: Q7, 9: Q8, 10: Q9, 11: Q10, 12: Email
+    // 2: Q1, 3: Q2, 4: Q3, 5: Q4, 6: Q5, 7: Q6, 8: Q7, 9: Q8, 10: Q9, 11: Q10, 12: Final
     if (s === 2 && !answers.q1_ai_use) return setErr("Please select an option.");
     if (s === 3 && !answers.q2_confidence) return setErr("Please select an option.");
 
@@ -153,19 +211,13 @@ export default function FormPage() {
     if (s === 7 && !answers.q6_learn_style) return setErr("Please select an option.");
 
     if (s === 8) {
-      if (answers.q7_tracks.length !== Q7_EXACT)
-        return setErr(`Please select exactly ${Q7_EXACT} options.`);
+      if (answers.q7_tracks.length === 0) return setErr("Please select at least 1 option.");
+      if (answers.q7_tracks.length > Q7_MAX) return setErr(`Please select up to ${Q7_MAX} options.`);
     }
 
     if (s === 9 && !answers.q8_length) return setErr("Please select an option.");
     if (s === 10 && !answers.q9_age) return setErr("Please select an option.");
-    if (s === 11 && !answers.q10_download) return setErr("Please select an option.");
-
-    if (s === EMAIL_STEP) {
-      const email = answers.email.trim();
-      const ok = !!email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-      if (!ok) return setErr("Please enter a valid email.");
-    }
+    if (s === 11 && !answers.q10_momentum) return setErr("Please select an option.");
 
     return true;
   }
@@ -182,53 +234,41 @@ export default function FormPage() {
     }
   }
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    if (!validateStep(step)) return;
+  function buildPersonalizedLines() {
+    // Concise Option B:
+    // "Based on your answers:" + 2 pain points + 2–3 help lines
+    const pains = answers.q3_pains.slice(0, 2);
+    const usecases = answers.q4_usecases.slice(0, 2);
+    const tracks = answers.q7_tracks.slice(0, 3);
 
-    try {
-      setSubmitting(true);
-      setError(null);
+    const youToldUs: string[] = [];
+    if (pains[0]) youToldUs.push(pains[0]);
+    if (pains[1]) youToldUs.push(pains[1]);
 
-      const { zoneid, clickid } = getPropellerParams();
+    // Help lines: prioritize use cases, then tracks as skill outcomes
+    const wellHelpYou: string[] = [];
+    if (usecases[0]) wellHelpYou.push(`Get faster results for: ${usecases[0]}`);
+    if (usecases[1]) wellHelpYou.push(`Improve your workflow for: ${usecases[1]}`);
 
-      const res = await fetch("/api/form", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...answers,
-          source: "popup-quiz",
-          zoneid,
-          clickid,
-        }),
-      });
-
-      if (!res.ok) throw new Error("Request failed");
-
-      // ✅ Track ONLY after backend success (real conversion)
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (window as any).amplitude?.track?.("email_submitted", {
-        zoneid,
-        clickid,
-      });
-
-      setSubmitted(true);
-    } catch {
-      setError("Something went wrong. Please try again.");
-    } finally {
-      setSubmitting(false);
+    // Track-based (career skill builder angle)
+    if (tracks.length > 0) {
+      wellHelpYou.push(`Build a real skill in: ${tracks.join(", ")}`);
+    } else {
+      // fallback if none
+      wellHelpYou.push("Build a repeatable AI workflow you can trust at work");
     }
+
+    return { youToldUs, wellHelpYou };
   }
 
   const q7Helper = useMemo(() => {
     const n = answers.q7_tracks.length;
-    const remaining = Math.max(0, Q7_EXACT - n);
-    if (n === 0) return `Choose ${Q7_EXACT}.`;
-    if (remaining === 0) return `Great — ${Q7_EXACT} selected.`;
-    return `${n} selected — choose ${remaining} more.`;
+    if (n === 0) return `Choose up to ${Q7_MAX}.`;
+    if (n === Q7_MAX) return `Great — ${Q7_MAX} selected.`;
+    return `${n} selected — choose up to ${Q7_MAX}.`;
   }, [answers.q7_tracks.length]);
 
-  // --- Options (edit anytime) ---
+  // --- Options ---
   const Q1_OPTIONS = ["Yes, regularly", "Sometimes", "Tried it a bit", "Not yet"];
   const Q2_OPTIONS = ["Very confident", "Somewhat confident", "Not confident yet"];
 
@@ -279,31 +319,45 @@ export default function FormPage() {
   const Q8_OPTIONS = ["3–5 minutes", "6–10 minutes", "11–15 minutes"];
   const Q9_OPTIONS = ["18–24", "25–34", "35–44", "45–54", "55+"];
 
+  // New momentum / identity question (Q10)
   const Q10_OPTIONS = [
-    "Yes — send me the Android link",
-    "Maybe later — still interested",
-    "No — not for me",
+    "I’d save hours every week",
+    "I’d feel more confident using AI",
+    "I’d stop second-guessing AI outputs",
+    "I’d get a real advantage at work",
   ];
 
-  // Thank you page (no progress/counter)
-  if (submitted) {
-    return (
-      <main className="min-h-screen bg-slate-950 flex items-center justify-center px-4">
-        <div className="w-full max-w-xl bg-slate-900 border border-slate-800 rounded-3xl p-8 shadow-xl text-center text-slate-100">
-          <p className="text-xs font-semibold tracking-[0.25em] text-slate-400 uppercase mb-3">
-            AI Ready
-          </p>
-          <h1 className="text-2xl font-semibold mb-3 text-white">Thank you!</h1>
-          <p className="text-sm text-slate-300">
-            We&apos;ve sent your AI Ready access link to your email.
-          </p>
-          <p className="text-xs text-slate-400 mt-3">
-            If you don&apos;t see it within a few minutes, please check your Spam/Junk folder.
-          </p>
-        </div>
-      </main>
-    );
+  function handleGooglePlayClick() {
+    const { zoneid, clickid } = getPropellerParams();
+    const session_id = getSessionId();
+
+    // Track intent click
+    trackEvent("google_play_cta_clicked", {
+      zoneid,
+      clickid,
+      session_id,
+      // lightweight context for analysis
+      top_pains: answers.q3_pains.slice(0, 3),
+      top_usecases: answers.q4_usecases.slice(0, 3),
+      tracks: answers.q7_tracks.slice(0, 3),
+      momentum: answers.q10_momentum,
+    });
+
+    // Same-window redirect through tracked bridge page
+    const url = new URL("/go/google-play", window.location.origin);
+    if (zoneid) url.searchParams.set("zoneid", zoneid);
+    if (clickid) url.searchParams.set("clickid", clickid);
+    url.searchParams.set("src", "funnel");
+    if (session_id) url.searchParams.set("sid", session_id);
+
+    window.location.href = url.toString();
   }
+
+  const { youToldUs, wellHelpYou } = useMemo(() => buildPersonalizedLines(), [
+    answers.q3_pains,
+    answers.q4_usecases,
+    answers.q7_tracks,
+  ]);
 
   return (
     <main className="min-h-screen bg-slate-950 flex items-center justify-center px-4">
@@ -340,7 +394,7 @@ export default function FormPage() {
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="mt-4">
+        <div className="mt-4">
           {/* STEP CONTENT */}
           <div className="space-y-2 mb-4">
             {/* Page 1 – Intro with image */}
@@ -401,7 +455,7 @@ export default function FormPage() {
                 <p className="text-base md:text-lg font-medium text-white">
                   What are your biggest work pain points right now?
                 </p>
-                <p className="text-xs text-slate-300">Select up to {Q3_MAX}.</p>
+                <p className="text-xs text-slate-300">Choose your top priorities (up to {Q3_MAX}).</p>
                 <MultiSelectGroup
                   value={answers.q3_pains}
                   onChange={(v) => updateSingle("q3_pains", v)}
@@ -417,7 +471,7 @@ export default function FormPage() {
                 <p className="text-base md:text-lg font-medium text-white">
                   Which AI use cases would help you most?
                 </p>
-                <p className="text-xs text-slate-300">Select up to {Q4_MAX}.</p>
+                <p className="text-xs text-slate-300">Choose your top priorities (up to {Q4_MAX}).</p>
                 <MultiSelectGroup
                   value={answers.q4_usecases}
                   onChange={(v) => updateSingle("q4_usecases", v)}
@@ -455,18 +509,18 @@ export default function FormPage() {
               </>
             )}
 
-            {/* Page 8 – Q7 (multi exactly 3) */}
+            {/* Page 8 – Q7 (multi up to 3) */}
             {step === 8 && (
               <>
                 <p className="text-base md:text-lg font-medium text-white">
-                  Pick exactly {Q7_EXACT} tracks you’d want inside AI Ready
+                  Pick up to {Q7_MAX} tracks you’d want inside AI Ready
                 </p>
                 <p className="text-xs text-slate-300">{q7Helper}</p>
                 <MultiSelectGroup
                   value={answers.q7_tracks}
                   onChange={(v) => updateSingle("q7_tracks", v)}
                   options={Q7_OPTIONS}
-                  maxSelected={Q7_EXACT}
+                  maxSelected={Q7_MAX}
                 />
               </>
             )}
@@ -499,39 +553,72 @@ export default function FormPage() {
               </>
             )}
 
-            {/* Page 11 – Q10 */}
+            {/* Page 11 – Q10 (Momentum) */}
             {step === 11 && (
               <>
                 <p className="text-base md:text-lg font-medium text-white">
-                  AI Ready is already available on Android. Do you want the download link?
+                  If AI worked properly for you, what would change most?
                 </p>
                 <RadioGroup
-                  value={answers.q10_download}
-                  onChange={(v) => updateSingle("q10_download", v)}
+                  value={answers.q10_momentum}
+                  onChange={(v) => updateSingle("q10_momentum", v)}
                   options={Q10_OPTIONS}
                 />
               </>
             )}
 
-            {/* Page 12 – Email capture */}
-            {step === EMAIL_STEP && (
+            {/* Page 12 – Final personalized install page */}
+            {step === FINAL_STEP && (
               <>
                 <p className="text-base md:text-lg font-medium text-white">
-                  Final step — where should we send your AI Ready access link?
+                  Your AI Career Upgrade Plan Is Ready
                 </p>
-                <p className="text-xs text-slate-300 mb-2">
-                  Enter your email to get the link to the AI Ready app.
+
+                <p className="text-sm text-slate-300 mt-2">
+                  <span className="font-medium text-slate-100">Based on your answers:</span>
                 </p>
-                <input
-                  type="email"
-                  value={answers.email}
-                  onChange={(e) => updateSingle("email", e.target.value)}
-                  className="w-full rounded-2xl border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                  placeholder="you@company.com"
-                />
-                <p className="text-[11px] text-slate-500 mt-1">
-                  If you don’t receive the email, please check your Spam/Junk folder.
+
+                {youToldUs.length > 0 && (
+                  <div className="mt-3 rounded-2xl border border-slate-800 bg-slate-900 p-4">
+                    <p className="text-xs uppercase tracking-[0.2em] text-slate-400 mb-2">
+                      You told us
+                    </p>
+                    <ul className="text-sm text-slate-200 space-y-1">
+                      {youToldUs.map((x) => (
+                        <li key={x}>• {x}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                <div className="mt-3 rounded-2xl border border-slate-800 bg-slate-900 p-4">
+                  <p className="text-xs uppercase tracking-[0.2em] text-slate-400 mb-2">
+                    We’ll help you
+                  </p>
+                  <ul className="text-sm text-slate-200 space-y-1">
+                    {wellHelpYou.slice(0, 3).map((x) => (
+                      <li key={x}>✔ {x}</li>
+                    ))}
+                  </ul>
+                </div>
+
+                <p className="text-sm text-slate-300 mt-3">
+                  Professionals who know how to use AI properly have a serious advantage.
                 </p>
+
+                <div className="mt-4">
+                  <button
+                    type="button"
+                    onClick={handleGooglePlayClick}
+                    className="w-full px-4 py-3 rounded-2xl bg-indigo-500 text-sm md:text-base font-medium text-white hover:bg-indigo-600 transition"
+                  >
+                    Get AI Ready on Google Play →
+                  </button>
+
+                  <p className="text-[11px] text-slate-400 mt-2 text-center">
+                    Free download • No login required
+                  </p>
+                </div>
               </>
             )}
           </div>
@@ -540,7 +627,7 @@ export default function FormPage() {
 
           {/* Buttons */}
           <div className="flex items-center justify-between mt-4 gap-3">
-            {step !== INTRO_STEP && (
+            {step !== INTRO_STEP && step !== FINAL_STEP && (
               <button
                 type="button"
                 onClick={back}
@@ -550,7 +637,15 @@ export default function FormPage() {
               </button>
             )}
 
-            {step < TOTAL_STEPS && (
+            {step === FINAL_STEP ? (
+              <button
+                type="button"
+                onClick={back}
+                className="px-3 py-2 rounded-full border border-slate-700 text-xs md:text-sm text-slate-200 hover:bg-slate-800 transition"
+              >
+                ← Back
+              </button>
+            ) : step < TOTAL_STEPS ? (
               <button
                 type="button"
                 onClick={next}
@@ -558,19 +653,21 @@ export default function FormPage() {
               >
                 Next →
               </button>
-            )}
-
-            {step === TOTAL_STEPS && (
+            ) : (
               <button
-                type="submit"
-                disabled={submitting}
-                className="ml-auto px-4 py-2 rounded-full bg-indigo-500 text-xs md:text-sm font-medium text-white hover:bg-indigo-600 disabled:opacity-60 disabled:cursor-not-allowed transition"
+                type="button"
+                onClick={() => {
+                  // Validate Q10, then move to final step
+                  if (!validateStep(step)) return;
+                  setStep(FINAL_STEP);
+                }}
+                className="ml-auto px-4 py-2 rounded-full bg-indigo-500 text-xs md:text-sm font-medium text-white hover:bg-indigo-600 transition"
               >
-                {submitting ? "Submitting…" : "Submit →"}
+                Next →
               </button>
             )}
           </div>
-        </form>
+        </div>
       </div>
     </main>
   );
