@@ -1,58 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import React, { useEffect, useMemo, useRef, useState } from "react";
-
-// ----------------------------
-// Analytics (Amplitude via window.amplitude)
-// Tracks:
-// - quiz_started (once)
-// - step_viewed (once per step)
-// - quiz_completed (once when final page is reached)
-// - google_play_cta_clicked (on CTA click)
-// Uses Propeller params: ?zoneid=...&clickid=...
-// Adds stable session_id in localStorage
-// ----------------------------
-
-function getPropellerParams() {
-  if (typeof window === "undefined") {
-    return { zoneid: null as string | null, clickid: null as string | null };
-  }
-
-  const params = new URLSearchParams(window.location.search);
-  const zoneidFromUrl = params.get("zoneid");
-  const clickidFromUrl = params.get("clickid");
-
-  // Persist
-  if (zoneidFromUrl) localStorage.setItem("propeller_zoneid", zoneidFromUrl);
-  if (clickidFromUrl) localStorage.setItem("propeller_clickid", clickidFromUrl);
-
-  return {
-    zoneid: zoneidFromUrl ?? localStorage.getItem("propeller_zoneid"),
-    clickid: clickidFromUrl ?? localStorage.getItem("propeller_clickid"),
-  };
-}
-
-function getSessionId() {
-  if (typeof window === "undefined") return null as string | null;
-  const key = "ai_ready_session_id";
-  const existing = localStorage.getItem(key);
-  if (existing) return existing;
-
-  const sid =
-    (typeof crypto !== "undefined" && "randomUUID" in crypto
-      ? crypto.randomUUID()
-      : `sid_${Math.random().toString(16).slice(2)}_${Date.now()}`) as string;
-
-  localStorage.setItem(key, sid);
-  return sid;
-}
-
-function trackEvent(name: string, props?: Record<string, unknown>) {
-  if (typeof window === "undefined") return;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  (window as any).amplitude?.track?.(name, props);
-}
+import React, { useMemo, useState } from "react";
 
 // Funnel structure:
 // Page 1  = intro (no % counter)
@@ -101,47 +50,6 @@ export default function FormPage() {
     q9_age: "",
     q10_momentum: "",
   });
-
-  // --- Analytics: quiz_started once (when user enters Q1 the first time) ---
-  const quizStartedRef = useRef(false);
-
-  useEffect(() => {
-    if (quizStartedRef.current) return;
-    if (step !== FIRST_QUESTION_STEP) return;
-
-    quizStartedRef.current = true;
-    const { zoneid, clickid } = getPropellerParams();
-    const session_id = getSessionId();
-
-    trackEvent("quiz_started", { zoneid, clickid, session_id });
-  }, [step]);
-
-  // --- Analytics: step_viewed once per step ---
-  const stepViewedRef = useRef<Set<number>>(new Set());
-
-  useEffect(() => {
-    if (stepViewedRef.current.has(step)) return;
-    stepViewedRef.current.add(step);
-
-    const { zoneid, clickid } = getPropellerParams();
-    const session_id = getSessionId();
-
-    trackEvent("step_viewed", { step, zoneid, clickid, session_id });
-  }, [step]);
-
-  // --- Analytics: quiz_completed once when reaching final step ---
-  const quizCompletedRef = useRef(false);
-
-  useEffect(() => {
-    if (quizCompletedRef.current) return;
-    if (step !== FINAL_STEP) return;
-
-    quizCompletedRef.current = true;
-    const { zoneid, clickid } = getPropellerParams();
-    const session_id = getSessionId();
-
-    trackEvent("quiz_completed", { zoneid, clickid, session_id });
-  }, [step]);
 
   // Question number for steps 2–11 (1–10), else 0
   const questionNumber =
@@ -346,30 +254,8 @@ export default function FormPage() {
   ];
 
   function handleGooglePlayClick() {
-    const { zoneid, clickid } = getPropellerParams();
-    const session_id = getSessionId();
-
-    trackEvent("google_play_cta_clicked", {
-      zoneid,
-      clickid,
-      session_id,
-      top_pains: answers.q3_pains.slice(0, 3),
-      top_usecases: answers.q4_usecases.slice(0, 3),
-      tracks: answers.q7_tracks.slice(0, 3),
-      momentum: answers.q10_momentum,
-      age: answers.q9_age,
-      confidence: answers.q2_confidence,
-      lesson_length: answers.q8_length,
-    });
-
-    // Same-window redirect through tracked bridge page
-    const url = new URL("/go/google-play", window.location.origin);
-    if (zoneid) url.searchParams.set("zoneid", zoneid);
-    if (clickid) url.searchParams.set("clickid", clickid);
-    url.searchParams.set("src", "funnel");
-    if (session_id) url.searchParams.set("sid", session_id);
-
-    window.location.href = url.toString();
+    window.location.href =
+      "https://play.google.com/store/apps/details?id=com.aiready.app";
   }
 
   const helpLines = useMemo(() => buildHelpLines(), [
