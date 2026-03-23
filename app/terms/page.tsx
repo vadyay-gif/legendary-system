@@ -34,24 +34,55 @@ export default function TermsPage() {
           for learning purposes only.
         </p>
 
+        <p className="text-slate-600 mb-4">
+          Some content within the app is available for free, while additional
+          content requires a paid subscription.
+        </p>
+
         <h2 className="text-xl font-semibold mt-8 mb-3">
           2. Subscriptions and Payments
         </h2>
 
         <p className="text-slate-600 mb-4">
-          AI Ready may offer optional premium subscriptions that provide access
-          to additional educational content.
+          AI Ready offers optional auto-renewable subscriptions that provide
+          access to premium content and features.
         </p>
 
         <p className="text-slate-600 mb-4">
-          Subscriptions automatically renew unless cancelled at least 24 hours
-          before the end of the current billing period. Payment will be charged
-          to your Apple ID account at confirmation of purchase.
+          By purchasing a subscription, you gain access to:
+        </p>
+
+        <ul className="list-disc ml-6 text-slate-600 mb-4">
+          <li>Tracks 2–9 (premium learning content)</li>
+          <li>All lessons and exercises within premium tracks</li>
+          <li>Additional advanced AI-powered learning features</li>
+        </ul>
+
+        <p className="text-slate-600 mb-4">
+          Subscription options may include weekly, monthly, and yearly plans.
+          Prices are displayed in the app and may vary by region.
+        </p>
+
+        <p className="text-slate-600 mb-4">
+          Payment will be charged to your Apple ID account at confirmation of
+          purchase.
+        </p>
+
+        <p className="text-slate-600 mb-4">
+          Subscriptions automatically renew unless auto-renew is turned off at
+          least 24 hours before the end of the current billing period. Your
+          account will be charged for renewal within 24 hours prior to the end
+          of the current period.
         </p>
 
         <p className="text-slate-600 mb-4">
           You can manage or cancel your subscription at any time through your
           Apple App Store account settings.
+        </p>
+
+        <p className="text-slate-600 mb-4">
+          No refunds are provided for any unused portion of a subscription
+          period, except as required by applicable law.
         </p>
 
         <p className="text-slate-600 mb-4">
@@ -66,9 +97,7 @@ export default function TermsPage() {
           accordance with these Terms.
         </p>
 
-        <p className="text-slate-600 mb-4">
-          You agree not to:
-        </p>
+        <p className="text-slate-600 mb-4">You agree not to:</p>
 
         <ul className="list-disc ml-6 text-slate-600 mb-4">
           <li>Attempt to reverse engineer or modify the application</li>
@@ -82,8 +111,8 @@ export default function TermsPage() {
 
         <p className="text-slate-600 mb-4">
           All content, lessons, design elements, and educational materials
-          provided within the AI Ready app are the intellectual property of the
-          developer unless otherwise stated.
+          provided within the AI Ready app are the intellectual property of AI
+          Ready unless otherwise stated.
         </p>
 
         <p className="text-slate-600 mb-4">
@@ -111,9 +140,9 @@ export default function TermsPage() {
         </h2>
 
         <p className="text-slate-600 mb-4">
-          To the fullest extent permitted by law, the developer of AI Ready
-          shall not be liable for any indirect, incidental, or consequential
-          damages arising from the use of the application.
+          To the fullest extent permitted by law, AI Ready shall not be liable
+          for any indirect, incidental, or consequential damages arising from
+          the use of the application.
         </p>
 
         <h2 className="text-xl font-semibold mt-8 mb-3">
@@ -130,11 +159,24 @@ export default function TermsPage() {
         </h2>
 
         <p className="text-slate-600 mb-4">
-          These Terms shall be governed and interpreted in accordance with
-          applicable laws, without regard to conflict-of-law principles.
+          These Terms shall be governed and interpreted in accordance with the
+          laws of the United Arab Emirates.
         </p>
 
-        <h2 className="text-xl font-semibold mt-8 mb-3">9. Contact</h2>
+        <h2 className="text-xl font-semibold mt-8 mb-3">
+          9. Apple Standard EULA
+        </h2>
+
+        <p className="text-slate-600 mb-4">
+          These Terms are in addition to Apple&apos;s Standard End User License
+          Agreement (EULA):
+        </p>
+
+        <p className="text-blue-600 underline mb-4">
+          https://www.apple.com/legal/internet-services/itunes/dev/stdeula/
+        </p>
+
+        <h2 className="text-xl font-semibold mt-8 mb-3">10. Contact</h2>
 
         <p className="text-slate-600 mb-4">
           If you have any questions regarding these Terms, please contact:
