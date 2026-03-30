@@ -10,7 +10,6 @@ export default function Header({ current }: { current: string }) {
   return (
     <header className="sticky top-0 z-50 border-b border-slate-200 bg-white/85 backdrop-blur-xl">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3">
-        {/* Brand */}
         <Link href="/" className="flex items-center gap-3">
           <img
             src="/favicon.png"
@@ -25,7 +24,6 @@ export default function Header({ current }: { current: string }) {
           </div>
         </Link>
 
-        {/* Desktop nav */}
         <nav className="hidden items-center gap-6 md:flex">
           <Link
             href="/"
@@ -81,7 +79,6 @@ export default function Header({ current }: { current: string }) {
           </div>
         </nav>
 
-        {/* Mobile CTA */}
         <div className="flex items-center gap-2 md:hidden">
           <a
             href={APPLE_URL}
