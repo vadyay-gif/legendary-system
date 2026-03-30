@@ -167,28 +167,6 @@ export default function Page() {
                     />
                   </div>
                 </div>
-
-                <div className="mx-auto mt-4 grid max-w-[340px] grid-cols-3 gap-3">
-                  {[
-                    { value: "35+", label: "Professional focus" },
-                    { value: "5m", label: "Daily learning" },
-                    { value: "AI", label: "Career advantage" },
-                  ].map((item) => (
-                    <div
-                      key={item.label}
-                      className="rounded-2xl border border-slate-200 bg-white p-3 text-center shadow-sm"
-                    >
-                      <div className="text-lg font-bold text-slate-950">{item.value}</div>
-                      <div className="mt-1 text-xs leading-tight text-slate-500">
-                        {item.label}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                <p className="mx-auto mt-3 max-w-[340px] text-center text-xs text-slate-500">
-                  Replace <code>/app-home-screen.jpg</code> with your exported app screenshot.
-                </p>
               </div>
             </div>
           </div>
