@@ -8,16 +8,6 @@ const APPLE_URL = "https://apps.apple.com/app/ai-ready/id6759277049";
 const GOOGLE_URL =
   "https://play.google.com/store/apps/details?id=com.aiready.app";
 
-// helper components here...
-
-export default function HomeLandingPage() {
-  return (
-    <div className="min-h-screen">
-      {/* full page JSX here */}
-    </div>
-  );
-}
-
 function AppStoreButton({
   href,
   type,
@@ -76,10 +66,22 @@ function AppleIcon() {
 function GooglePlayIcon() {
   return (
     <svg width="26" height="26" viewBox="0 0 24 24" aria-hidden="true">
-      <path fill="#34A853" d="M3.82 2.28 13.4 11.86 3.82 21.43A1.8 1.8 0 0 1 3.3 20.2V3.5c0-.48.18-.91.52-1.22Z" />
-      <path fill="#4285F4" d="M16.58 15.03 6.12 20.99l7.28-9.13 3.18 3.17Z" />
-      <path fill="#FBBC04" d="M20.06 10.15c.86.48.86 1.25 0 1.73l-3.48 1.98-3.18-3.17 3.18-3.17 3.48 1.63Z" />
-      <path fill="#EA4335" d="M6.12 3.01 16.58 8.97l-3.18 3.17-7.28-9.13Z" />
+      <path
+        fill="#34A853"
+        d="M3.82 2.28 13.4 11.86 3.82 21.43A1.8 1.8 0 0 1 3.3 20.2V3.5c0-.48.18-.91.52-1.22Z"
+      />
+      <path
+        fill="#4285F4"
+        d="M16.58 15.03 6.12 20.99l7.28-9.13 3.18 3.17Z"
+      />
+      <path
+        fill="#FBBC04"
+        d="M20.06 10.15c.86.48.86 1.25 0 1.73l-3.48 1.98-3.18-3.17 3.18-3.17 3.48 1.63Z"
+      />
+      <path
+        fill="#EA4335"
+        d="M6.12 3.01 16.58 8.97l-3.18 3.17-7.28-9.13Z"
+      />
     </svg>
   );
 }
@@ -96,7 +98,13 @@ function CheckItem({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex items-start gap-3">
       <div className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-emerald-700">
-        <svg width="14" height="14" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+        <svg
+          width="14"
+          height="14"
+          viewBox="0 0 20 20"
+          fill="currentColor"
+          aria-hidden="true"
+        >
           <path
             fillRule="evenodd"
             d="M16.704 5.29a1 1 0 0 1 .006 1.414l-8 8.07a1 1 0 0 1-1.42-.004l-4-4.07a1 1 0 0 1 1.426-1.404l3.29 3.347 7.287-7.35a1 1 0 0 1 1.41-.003Z"
@@ -115,14 +123,15 @@ export default function Page() {
       <Header current="home" />
 
       <main>
-        {/* HERO */}
         <section className="relative overflow-hidden">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(56,189,248,0.13),_transparent_28%),radial-gradient(circle_at_top_right,_rgba(99,102,241,0.10),_transparent_22%)]" />
 
           <div className="relative mx-auto max-w-7xl px-4 pb-12 pt-10 md:pb-16 md:pt-16">
             <div className="grid items-center gap-10 lg:grid-cols-[1.05fr_0.95fr]">
               <div className="max-w-3xl">
-                <SectionEyebrow>AI productivity app for professionals</SectionEyebrow>
+                <SectionEyebrow>
+                  AI productivity app for professionals
+                </SectionEyebrow>
 
                 <h1 className="mt-4 text-4xl font-bold tracking-tight text-slate-950 md:text-6xl md:leading-[1.03]">
                   Get a real edge at work with better AI prompting.
@@ -156,8 +165,12 @@ export default function Page() {
 
                 <div className="mt-7 rounded-3xl border border-slate-200 bg-white/90 p-5 shadow-sm">
                   <div className="grid gap-3 sm:grid-cols-2">
-                    <CheckItem>Learn practical AI skills for real work tasks</CheckItem>
-                    <CheckItem>Built for professionals, managers, and job seekers</CheckItem>
+                    <CheckItem>
+                      Learn practical AI skills for real work tasks
+                    </CheckItem>
+                    <CheckItem>
+                      Built for professionals, managers, and job seekers
+                    </CheckItem>
                     <CheckItem>Android: free with ads</CheckItem>
                     <CheckItem>iPhone: first lesson free, no ads</CheckItem>
                   </div>
@@ -182,7 +195,6 @@ export default function Page() {
           </div>
         </section>
 
-        {/* PAIN / PROMISE */}
         <section className="mx-auto max-w-7xl px-4 py-10 md:py-14">
           <div className="grid gap-4 lg:grid-cols-2">
             <div className="rounded-3xl border border-rose-200 bg-rose-50 p-6 md:p-8">
@@ -221,7 +233,6 @@ export default function Page() {
           </div>
         </section>
 
-        {/* BEFORE / AFTER */}
         <section className="mx-auto max-w-7xl px-4 py-10 md:py-14">
           <div className="mx-auto max-w-3xl text-center">
             <SectionEyebrow>Why it works</SectionEyebrow>
@@ -268,7 +279,6 @@ export default function Page() {
           </div>
         </section>
 
-        {/* OUTCOMES */}
         <section className="mx-auto max-w-7xl px-4 py-10 md:py-14">
           <div className="mx-auto max-w-3xl text-center">
             <SectionEyebrow>What you’ll improve</SectionEyebrow>
@@ -317,7 +327,6 @@ export default function Page() {
           </div>
         </section>
 
-        {/* WHO IT'S FOR */}
         <section className="mx-auto max-w-7xl px-4 py-10 md:py-14">
           <div className="rounded-[32px] border border-slate-200 bg-slate-950 p-7 text-white md:p-10">
             <div className="grid gap-8 lg:grid-cols-[0.95fr_1.05fr]">
@@ -351,7 +360,6 @@ export default function Page() {
           </div>
         </section>
 
-        {/* CTA BAND */}
         <section className="mx-auto max-w-7xl px-4 py-10 md:py-14">
           <div className="rounded-[32px] border border-sky-200 bg-gradient-to-br from-sky-50 via-white to-indigo-50 p-7 shadow-sm md:p-10">
             <div className="grid gap-6 lg:grid-cols-[1fr_auto] lg:items-center">
@@ -374,7 +382,6 @@ export default function Page() {
           </div>
         </section>
 
-        {/* FAQ */}
         <section id="faq" className="mx-auto max-w-6xl px-4 py-10 md:py-14">
           <div className="mx-auto max-w-3xl text-center">
             <SectionEyebrow>FAQ</SectionEyebrow>
