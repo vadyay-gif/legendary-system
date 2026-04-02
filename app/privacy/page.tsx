@@ -171,7 +171,7 @@ export default function PrivacyPage() {
           contact the developer at:
         </p>
 
-        <p className="text-slate-700 font-medium">vadim.g@orionai.ae</p>
+        <p className="text-slate-700 font-medium">support@getaiready.app</p>
       </main>
 
       <Footer />
