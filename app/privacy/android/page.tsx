@@ -216,10 +216,10 @@ export default function AndroidPrivacyPage() {
           <p className="mb-2">If you have any questions, you can contact us at:</p>
           <p>
             <a
-              href="mailto:aivadimg@gmail.com"
+              href="mailto:support@getaiready.app"
               className="underline underline-offset-2 text-blue-600 dark:text-blue-400"
             >
-              aivadimg@gmail.com
+              support@getaiready.app
             </a>
           </p>
         </section>
