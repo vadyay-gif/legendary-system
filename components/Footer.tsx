@@ -45,14 +45,7 @@ export default function Footer() {
             </p>
           </div>
 
-          <div className="flex flex-col gap-2 text-sm text-slate-600">
-            <a href="/funnel" className="hover:text-slate-900">
-              Take the AI quiz
-            </a>
-            <a href="/lesson" className="hover:text-slate-900">
-              Free lesson
-            </a>
-          </div>
+          <div />
 
           <div className="flex flex-col gap-2 text-sm text-slate-600 md:items-end">
             <a href="/privacy" className="hover:text-slate-900">
