@@ -6,6 +6,8 @@ export default function Footer() {
   return (
     <footer className="mt-20 border-t border-slate-200 bg-slate-50">
       <div className="mx-auto max-w-7xl px-4 py-12">
+        
+        {/* Top CTA */}
         <div className="mb-10 flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
           <div>
             <h3 className="text-xl font-semibold text-slate-900 md:text-2xl">
@@ -16,30 +18,42 @@ export default function Footer() {
             </p>
           </div>
 
-          <div className="flex flex-wrap gap-3">
+          {/* Store badges */}
+          <div className="flex flex-wrap items-center gap-3">
             <a
               href={APPLE_URL}
               target="_blank"
               rel="noreferrer"
-              className="inline-flex items-center justify-center rounded-xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white hover:bg-slate-800"
+              className="transition hover:opacity-85"
             >
-              App Store
+              <img
+                src="/badges/app-store.png"
+                alt="Download on the App Store"
+                className="h-9 w-auto object-contain sm:h-10"
+              />
             </a>
 
             <a
               href={GOOGLE_URL}
               target="_blank"
               rel="noreferrer"
-              className="inline-flex items-center justify-center rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-900 hover:bg-slate-100"
+              className="transition hover:opacity-85"
             >
-              Google Play
+              <img
+                src="/badges/google-play.png"
+                alt="Get it on Google Play"
+                className="h-9 w-auto object-contain sm:h-10"
+              />
             </a>
           </div>
         </div>
 
+        {/* Bottom grid */}
         <div className="grid gap-6 border-t border-slate-200 pt-6 md:grid-cols-3">
           <div>
-            <div className="text-base font-semibold text-slate-900">AI Ready</div>
+            <div className="text-base font-semibold text-slate-900">
+              AI Ready
+            </div>
             <p className="mt-2 text-sm text-slate-600">
               Practical AI productivity skills for professionals.
             </p>
