@@ -23,66 +23,14 @@ function AppStoreButton({
       target="_blank"
       rel="noreferrer"
       aria-label={isApple ? "Download on the App Store" : "Get it on Google Play"}
-      className={`group inline-flex min-h-[60px] items-center gap-3 rounded-2xl border px-4 py-3 shadow-sm transition-all duration-200 ${
-        isApple
-          ? "border-slate-900 bg-slate-900 text-white hover:bg-slate-800"
-          : "border-slate-200 bg-white text-slate-900 hover:border-slate-300 hover:bg-slate-50"
-      }`}
+      className="inline-flex shrink-0 transition hover:opacity-85"
     >
-      <span className="shrink-0">
-        {isApple ? <AppleIcon /> : <GooglePlayIcon />}
-      </span>
-
-      <span className="text-left leading-tight">
-        <span
-          className={`block text-[11px] uppercase tracking-wide ${
-            isApple ? "text-slate-300" : "text-slate-500"
-          }`}
-        >
-          {isApple ? "Download on the" : "Get it on"}
-        </span>
-        <span className="block text-base font-semibold">
-          {isApple ? "App Store" : "Google Play"}
-        </span>
-      </span>
+      <img
+        src={isApple ? "/badges/app-store.png" : "/badges/google-play.png"}
+        alt={isApple ? "Download on the App Store" : "Get it on Google Play"}
+        className="h-10 w-auto object-contain sm:h-11"
+      />
     </a>
-  );
-}
-
-function AppleIcon() {
-  return (
-    <svg
-      width="26"
-      height="26"
-      viewBox="0 0 24 24"
-      fill="currentColor"
-      aria-hidden="true"
-    >
-      <path d="M15.67 1.92c.07.86-.24 1.72-.76 2.34-.58.69-1.5 1.2-2.35 1.13-.09-.84.25-1.72.77-2.32.57-.67 1.54-1.17 2.34-1.15ZM18.58 17.06c-.45 1.03-.99 1.98-1.68 2.9-.89 1.18-1.62 2.37-2.98 2.39-1.34.03-1.77-.8-3.3-.8-1.54 0-2.01.77-3.28.82-1.31.05-2.3-1.3-3.2-2.48-1.81-2.39-3.19-6.76-1.34-10 .92-1.61 2.57-2.62 4.36-2.65 1.37-.03 2.65.92 3.3.92.64 0 2.24-1.14 3.77-.97.64.03 2.43.26 3.58 1.94-.09.06-2.14 1.25-2.12 3.72.03 2.95 2.6 3.93 2.89 4.04Z" />
-    </svg>
-  );
-}
-
-function GooglePlayIcon() {
-  return (
-    <svg width="26" height="26" viewBox="0 0 24 24" aria-hidden="true">
-      <path
-        fill="#34A853"
-        d="M3.82 2.28 13.4 11.86 3.82 21.43A1.8 1.8 0 0 1 3.3 20.2V3.5c0-.48.18-.91.52-1.22Z"
-      />
-      <path
-        fill="#4285F4"
-        d="M16.58 15.03 6.12 20.99l7.28-9.13 3.18 3.17Z"
-      />
-      <path
-        fill="#FBBC04"
-        d="M20.06 10.15c.86.48.86 1.25 0 1.73l-3.48 1.98-3.18-3.17 3.18-3.17 3.48 1.63Z"
-      />
-      <path
-        fill="#EA4335"
-        d="M6.12 3.01 16.58 8.97l-3.18 3.17-7.28-9.13Z"
-      />
-    </svg>
   );
 }
 
@@ -117,10 +65,55 @@ function CheckItem({ children }: { children: React.ReactNode }) {
   );
 }
 
+function ExampleCard({
+  label,
+  tone,
+  title,
+  body,
+}: {
+  label: string;
+  tone: "rose" | "sky" | "emerald";
+  title: string;
+  body: string;
+}) {
+  const toneStyles = {
+    rose: {
+      wrap: "border-rose-200 bg-rose-50",
+      pill: "text-rose-700",
+    },
+    sky: {
+      wrap: "border-sky-200 bg-sky-50",
+      pill: "text-sky-700",
+    },
+    emerald: {
+      wrap: "border-emerald-200 bg-emerald-50",
+      pill: "text-emerald-700",
+    },
+  }[tone];
+
+  return (
+    <div className={`flex h-full flex-col rounded-3xl border p-6 ${toneStyles.wrap}`}>
+      <div
+        className={`inline-flex w-fit rounded-full bg-white px-3 py-1 text-xs font-semibold uppercase tracking-wide ${toneStyles.pill}`}
+      >
+        {label}
+      </div>
+
+      <h3 className="mt-4 text-xl font-semibold leading-snug text-slate-950">
+        {title}
+      </h3>
+
+      <p className="mt-3 text-slate-700">
+        {body}
+      </p>
+    </div>
+  );
+}
+
 export default function Page() {
   return (
     <div className="min-h-screen bg-[linear-gradient(to_bottom,_#f8fbff_0%,_#ffffff_38%,_#ffffff_100%)] text-slate-900">
-      <Header current="home" />
+      <Header />
 
       <main>
         <section className="relative overflow-hidden">
@@ -143,7 +136,7 @@ export default function Page() {
                   and work smarter.
                 </p>
 
-                <div className="mt-7 grid gap-3 sm:inline-flex sm:flex-wrap">
+                <div className="mt-7 grid gap-3 sm:inline-flex sm:flex-wrap sm:items-center">
                   <AppStoreButton href={APPLE_URL} type="apple" />
                   <AppStoreButton href={GOOGLE_URL} type="google" />
                 </div>
@@ -196,8 +189,8 @@ export default function Page() {
         </section>
 
         <section className="mx-auto max-w-7xl px-4 py-10 md:py-14">
-          <div className="grid gap-4 lg:grid-cols-2">
-            <div className="rounded-3xl border border-rose-200 bg-rose-50 p-6 md:p-8">
+          <div className="grid gap-4 lg:grid-cols-2 lg:items-stretch">
+            <div className="flex h-full flex-col rounded-3xl border border-rose-200 bg-rose-50 p-6 md:p-8">
               <h2 className="text-2xl font-bold tracking-tight text-slate-950">
                 Most people use AI, but still don’t get much advantage from it
               </h2>
@@ -214,7 +207,7 @@ export default function Page() {
               </div>
             </div>
 
-            <div className="rounded-3xl border border-sky-200 bg-sky-50 p-6 md:p-8">
+            <div className="flex h-full flex-col rounded-3xl border border-sky-200 bg-sky-50 p-6 md:p-8">
               <h2 className="text-2xl font-bold tracking-tight text-slate-950">
                 AI Ready teaches the skill behind better AI results
               </h2>
@@ -235,7 +228,7 @@ export default function Page() {
 
         <section className="mx-auto max-w-7xl px-4 py-10 md:py-14">
           <div className="mx-auto max-w-3xl text-center">
-            <SectionEyebrow>Why it works</SectionEyebrow>
+            <SectionEyebrow>Why it works</SectionEyrow>
             <h2 className="mt-4 text-3xl font-bold tracking-tight text-slate-950 md:text-5xl">
               Same task. Better prompt. Better output.
             </h2>
@@ -246,36 +239,26 @@ export default function Page() {
           </div>
 
           <div className="mt-10 grid gap-4 md:grid-cols-3">
-            <div className="rounded-3xl border border-rose-200 bg-rose-50 p-6">
-              <div className="inline-flex rounded-full bg-white px-3 py-1 text-xs font-semibold uppercase tracking-wide text-rose-700">
-                Before
-              </div>
-              <h3 className="mt-4 text-xl font-semibold text-slate-950">
-                “Summarize my week.”
-              </h3>
-              <p className="mt-3 text-slate-600">
-                Too vague. No structure. Generic answer.
-              </p>
-            </div>
+            <ExampleCard
+              label="Before"
+              tone="rose"
+              title='Prompt: "Summarize my week."'
+              body="Too vague. No structure. The output is likely to be generic and less useful."
+            />
 
-            <div className="rounded-3xl border border-sky-200 bg-sky-50 p-6">
-              <div className="inline-flex rounded-full bg-white px-3 py-1 text-xs font-semibold uppercase tracking-wide text-sky-700">
-                Better prompt
-              </div>
-              <p className="mt-4 text-slate-800">
-                Turn these notes into a Monday action plan with Highlights,
-                Metrics, Risks, and next steps.
-              </p>
-            </div>
+            <ExampleCard
+              label="Better prompt"
+              tone="sky"
+              title="Prompt: Turn these notes into a Monday action plan"
+              body="Include Highlights, Metrics, Risks, and next steps so the result is structured and practical."
+            />
 
-            <div className="rounded-3xl border border-emerald-200 bg-emerald-50 p-6">
-              <div className="inline-flex rounded-full bg-white px-3 py-1 text-xs font-semibold uppercase tracking-wide text-emerald-700">
-                Better result
-              </div>
-              <p className="mt-4 text-slate-800">
-                Clear summary. Priorities. Action items. More useful immediately.
-              </p>
-            </div>
+            <ExampleCard
+              label="Better result"
+              tone="emerald"
+              title="Output: Clear summary with priorities and action items"
+              body="More usable immediately because the request was specific, structured, and work-focused."
+            />
           </div>
         </section>
 
@@ -374,7 +357,7 @@ export default function Page() {
                 </p>
               </div>
 
-              <div className="grid gap-3 sm:inline-flex sm:flex-wrap">
+              <div className="grid gap-3 sm:inline-flex sm:flex-wrap sm:items-center">
                 <AppStoreButton href={APPLE_URL} type="apple" />
                 <AppStoreButton href={GOOGLE_URL} type="google" />
               </div>
