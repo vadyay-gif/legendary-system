@@ -189,34 +189,36 @@ export default function Page() {
         <section className="mx-auto max-w-7xl px-4 py-10 md:py-14">
           <div className="grid gap-4 lg:grid-cols-2 lg:items-stretch">
             <div className="flex h-full flex-col rounded-3xl border border-rose-200 bg-rose-50 p-6 md:p-8">
-              <h2 className="text-2xl font-bold tracking-tight text-slate-950">
+              <h2 className="min-h-[5.5rem] text-2xl font-bold tracking-tight text-slate-950 md:min-h-[6rem]">
                 Most people use AI, but still don’t get much advantage from it
               </h2>
-              <div className="mt-5 space-y-3">
-                <div className="rounded-2xl bg-white/80 px-4 py-3 text-slate-700">
+
+              <div className="mt-5 grid gap-3">
+                <div className="flex min-h-[3.5rem] items-center rounded-2xl bg-white/80 px-4 py-3 text-slate-700">
                   Vague prompts lead to weak, generic outputs
                 </div>
-                <div className="rounded-2xl bg-white/80 px-4 py-3 text-slate-700">
+                <div className="flex min-h-[3.5rem] items-center rounded-2xl bg-white/80 px-4 py-3 text-slate-700">
                   People waste time fixing AI responses instead of using them
                 </div>
-                <div className="rounded-2xl bg-white/80 px-4 py-3 text-slate-700">
+                <div className="flex min-h-[3.5rem] items-center rounded-2xl bg-white/80 px-4 py-3 text-slate-700">
                   The gap between “using AI” and “using AI well” is huge
                 </div>
               </div>
             </div>
 
             <div className="flex h-full flex-col rounded-3xl border border-sky-200 bg-sky-50 p-6 md:p-8">
-              <h2 className="text-2xl font-bold tracking-tight text-slate-950">
+              <h2 className="min-h-[5.5rem] text-2xl font-bold tracking-tight text-slate-950 md:min-h-[6rem]">
                 AI Ready teaches the skill behind better AI results
               </h2>
-              <div className="mt-5 space-y-3">
-                <div className="rounded-2xl bg-white/90 px-4 py-3 text-slate-700">
+
+              <div className="mt-5 grid gap-3">
+                <div className="flex min-h-[3.5rem] items-center rounded-2xl bg-white/90 px-4 py-3 text-slate-700">
                   Learn how to prompt AI clearly for real work tasks
                 </div>
-                <div className="rounded-2xl bg-white/90 px-4 py-3 text-slate-700">
+                <div className="flex min-h-[3.5rem] items-center rounded-2xl bg-white/90 px-4 py-3 text-slate-700">
                   Build a productivity edge in emails, planning, analysis, and more
                 </div>
-                <div className="rounded-2xl bg-white/90 px-4 py-3 text-slate-700">
+                <div className="flex min-h-[3.5rem] items-center rounded-2xl bg-white/90 px-4 py-3 text-slate-700">
                   Practice in short scenarios that fit into a busy day
                 </div>
               </div>
