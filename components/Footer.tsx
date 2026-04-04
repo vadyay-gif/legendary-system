@@ -6,8 +6,6 @@ export default function Footer() {
   return (
     <footer className="mt-20 border-t border-slate-200 bg-slate-50">
       <div className="mx-auto max-w-7xl px-4 py-12">
-        
-        {/* Top CTA */}
         <div className="mb-10 flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
           <div>
             <h3 className="text-xl font-semibold text-slate-900 md:text-2xl">
@@ -18,7 +16,6 @@ export default function Footer() {
             </p>
           </div>
 
-          {/* Store badges */}
           <div className="flex flex-wrap items-center gap-3">
             <a
               href={APPLE_URL}
@@ -48,12 +45,9 @@ export default function Footer() {
           </div>
         </div>
 
-        {/* Bottom grid */}
         <div className="grid gap-6 border-t border-slate-200 pt-6 md:grid-cols-3">
           <div>
-            <div className="text-base font-semibold text-slate-900">
-              AI Ready
-            </div>
+            <div className="text-base font-semibold text-slate-900">AI Ready</div>
             <p className="mt-2 text-sm text-slate-600">
               Practical AI productivity skills for professionals.
             </p>
@@ -68,7 +62,10 @@ export default function Footer() {
             <a href="/terms" className="hover:text-slate-900">
               Terms
             </a>
-            <a href="/contact" className="hover:text-slate-900">
+            <a
+              href="mailto:support@getaiready.app"
+              className="hover:text-slate-900"
+            >
               Contact
             </a>
           </div>
