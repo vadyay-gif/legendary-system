@@ -9,10 +9,11 @@ export default function Footer() {
         <div className="mb-10 flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
           <div>
             <h3 className="text-xl font-semibold text-slate-900 md:text-2xl">
-              Improve how you use AI at work
+              Improve how you use AI.
             </h3>
             <p className="mt-1 text-slate-600">
-              Learn better prompting in just 5 minutes a day.
+              Build practical AI skills through interactive quests, real-world
+              challenges and reusable tools.
             </p>
           </div>
 
@@ -47,9 +48,11 @@ export default function Footer() {
 
         <div className="grid gap-6 border-t border-slate-200 pt-6 md:grid-cols-3">
           <div>
-            <div className="text-base font-semibold text-slate-900">AI Ready</div>
+            <div className="text-base font-semibold text-slate-900">
+              AI Ready
+            </div>
             <p className="mt-2 text-sm text-slate-600">
-              Practical AI productivity skills for professionals.
+              Practical AI skills for better results.
             </p>
           </div>
 
