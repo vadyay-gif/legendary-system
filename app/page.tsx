@@ -2,34 +2,33 @@ import type { Metadata } from "next";
 import HomeLandingPage from "@/components/home/HomeLandingPage";
 
 export const metadata: Metadata = {
-  title: "AI Ready | Learn AI Prompting for Work in 5 Minutes a Day",
+  title: "AI Ready: Better AI Results | Practical AI Skills",
   description:
-    "AI Ready is an AI productivity app for professionals. Learn AI prompting for work, improve ChatGPT results, and get better AI outputs in just 5 minutes a day.",
+    "Practice real AI situations, diagnose weak results, compare approaches and build reusable skills. AI Ready helps you use AI more deliberately.",
   keywords: [
+    "AI skills",
+    "use AI better",
+    "AI training",
+    "practical AI learning",
+    "better AI results",
     "AI prompting",
-    "learn AI prompting",
-    "AI at work",
-    "ChatGPT prompts for work",
-    "AI productivity app",
-    "prompting app for professionals",
-    "how to use AI at work",
-    "AI skills for professionals",
+    "working with AI",
   ],
   alternates: {
-    canonical: "https://getaiready.app",
+    canonical: "https://getaiready.app/",
   },
   openGraph: {
-    title: "AI Ready | Learn AI Prompting for Work in 5 Minutes a Day",
+    title: "Stop Guessing. Start Controlling AI. | AI Ready",
     description:
-      "Get a real edge at work with better AI prompting. Learn practical AI productivity skills for emails, meetings, summaries, research, and more.",
-    url: "https://getaiready.app",
+      "Practice on real AI situations. See what changes the result and build the judgement to use AI deliberately.",
+    url: "https://getaiready.app/",
     siteName: "AI Ready",
     images: [
       {
-        url: "https://getaiready.app/og-image.jpg",
+        url: "/opengraph-image",
         width: 1200,
         height: 630,
-        alt: "AI Ready app for learning AI prompting at work",
+        alt: "AI Ready — Stop Guessing. Start Controlling AI.",
       },
     ],
     locale: "en_US",
@@ -37,10 +36,10 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "AI Ready | Learn AI Prompting for Work in 5 Minutes a Day",
+    title: "Stop Guessing. Start Controlling AI. | AI Ready",
     description:
-      "Learn how to get better AI outputs at work with short, practical lessons built for professionals.",
-    images: ["https://getaiready.app/og-image.jpg"],
+      "Practice on real AI situations. See what changes the result and build the judgement to use AI deliberately.",
+    images: ["/opengraph-image"],
   },
   robots: {
     index: true,
